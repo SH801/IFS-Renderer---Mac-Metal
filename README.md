@@ -49,33 +49,20 @@ Planned:
 ## 📀 Installation
 
 ### Minimum Requirements
-- Windows 10 or later
-- OpenGL 4.5 capable graphics card
+- Mac Silicon
 
 ### Downloads
 Get the latest installer or portable version **[HERE](https://github.com/bezo97/IFSRenderer/releases/latest)**.  
 Previous versions can be found on the [Releases](https://github.com/bezo97/IFSRenderer/releases) tab.
 
 ### Build instructions
-You may build the project yourself using Visual Studio 2026 (with .NET Desktop Development workload).
-Since the default transforms are hosted in a separate repo, use the `--recurse-submodules` switch when cloning:  
 ```
-git clone --recurse-submodules https://github.com/bezo97/IFSRenderer.git
-```
-The Setup project uses a [VS extension](https://marketplace.visualstudio.com/items?itemName=VisualStudioClient.MicrosoftVisualStudio2022InstallerProjects), 
-which is not required to build the portable IFSRenderer executable. You can ignore the "unsupported" warning and keep the Setup project unloaded.
+xcode-select --install
+brew install --cask dotnet-sdk
+git clone https://github.com/SH801/IFS-Renderer---Mac-Metal
+cd IFS-Renderer
+./compileandrun.sh
 
-### Contributing
-
-Please follow the `.editorconfig` file in the root of the repository. If you submit a pr it must have the right formatting, otherwise the PR fails. You can fix the formatting by using the cleanup found in Visual Studio / Visual Studio Code / Rider, which will respect the `editorconfig`.
-
-To fix the formatting through the CLI run the following in the root of the project:
-
-```bash
-# You only need to restore the first time, or when the tools change
-dotnet tool restore
-
-dotnet dotnet-format
 ```
 
 ## 🕹️ Usage
