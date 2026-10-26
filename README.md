@@ -1,6 +1,6 @@
 ﻿<h1>
     <img align="left" src="https://github.com/bezo97/IFSRenderer/raw/master/Assets/icon_128.png">
-    <p align="center"><samp>IFSRenderer</samp>&emsp;&emsp;&emsp;&emsp;&emsp;</p>
+    <p align="center"><samp>IFSRenderer - Apple Mac Port</samp>&emsp;&emsp;&emsp;&emsp;&emsp;</p>
 </h1>
 <br/>
 <h3 align="center">
