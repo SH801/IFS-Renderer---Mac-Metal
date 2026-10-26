@@ -57,13 +57,27 @@ Previous versions can be found on the [Releases](https://github.com/bezo97/IFSRe
 
 ### Build instructions
 ```
+# Install Xcode build tools
 xcode-select --install
+
+# Install .NET SDK
 brew install --cask dotnet-sdk
+
+# Clone repo
 git clone https://github.com/SH801/IFS-Renderer---Mac-Metal
 cd IFS-Renderer
-./compileandrun.sh
+
+# Build MacOS version of IFS Renderer
+dotnet build MacDisplay/MacDisplay.csproj
+
+# Run MacOS version of IFS Renderer
+./IFSRenderer.app/Contents/MacOS/IFSRenderer
 
 ```
+
+## Note
+
+** EXPERIMENTAL ONLY ** Lots of bugs still to resolve...
 
 ## 🕹️ Usage
 
