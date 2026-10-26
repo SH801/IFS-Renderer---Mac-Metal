@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:MacDisplay.Views.Animation"
+             xmlns:common="using:MacDisplay.Views"
+             xmlns:vm="using:MacDisplay.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="500"
+             x:Class="MacDisplay.Views.Animation.CurveEditor"
+             x:DataType="vm:ChannelViewModel">
+    <Grid ClipToBounds="False">
+        <local:Spectrogram
+                IsVisible="{Binding #showSpectrogramCheckbox.IsChecked}"
+                Audio="{Binding AnimationVM.Audio}" 
+                SelectedAudioChannelId="{Binding SelectedAudioChannelOption}"
+                ViewScale="{Binding AnimationVM.ViewScale}"/>
+        <Border VerticalAlignment="Top" HorizontalAlignment="Left" BorderBrush="Gray" BorderThickness="2" CornerRadius="2" Background="#aa000000" Margin="16">
+            <StackPanel>
+                <Label HorizontalAlignment="Center" Foreground="Gray">Curve editor</Label>
+                <Label HorizontalAlignment="Center" Foreground="Gray">🚧 Under development</Label>
+                <CheckBox x:Name="showSpectrogramCheckbox" VerticalAlignment="Top" Margin="8">
+                    Show Audio Spectrogram
+                </CheckBox>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

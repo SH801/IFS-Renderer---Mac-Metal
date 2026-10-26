@@ -1,0 +1,22 @@
+﻿#nullable enable
+using System.Globalization;
+
+namespace MacDisplay.Helper;
+
+public static class GeneralHelpers
+{
+    /// <summary>
+    /// ulong to string formatter extension
+    /// </summary>
+    public static string ToKMB(this ulong num)
+    {
+        if (num > 999999999)
+            return num.ToString("0,,,.000B", CultureInfo.InvariantCulture);
+        else if (num > 999999)
+            return num.ToString("0,,.00M", CultureInfo.InvariantCulture);
+        else if (num > 999)
+            return num.ToString("0,.0K", CultureInfo.InvariantCulture);
+        else
+            return num.ToString(CultureInfo.InvariantCulture);
+    }
+}

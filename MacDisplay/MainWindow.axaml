@@ -1,0 +1,362 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        xmlns:animation="clr-namespace:MacDisplay.Views.Animation"
+        xmlns:disp="clr-namespace:IFSEngine.Avalonia.InteractiveDisplay;assembly=IFSEngine.Avalonia.InteractiveDisplay"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}"
+        Width="1920" Height="1080"
+        WindowState="Maximized"
+        DragDrop.AllowDrop="True"
+        x:Class="MacDisplay.MainWindow"
+        x:DataType="vm:MainViewModel">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NewCommand}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding ShowLoadParamsDialogCommand}"/>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveParamsCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveParamsAsCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding ExportToClipboardCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+E" Command="{Binding SaveExrCommand}"/>
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding SaveImageCommand}"/>
+        <KeyBinding Gesture="Ctrl+A" Command="{Binding AnimationViewModel.StartExportingFramesCommand}"/>
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding LoadRandomCommand}"/>
+        <KeyBinding Gesture="Pause" Command="{Binding StartStopRenderingCommand}"/>
+        <KeyBinding Gesture="F1" Command="{Binding VisitWikiCommand}"/>
+    </Window.KeyBindings>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="BackgroundColor" Color="#222222"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <!-- Remove border and background outlines from the Expander -->
+        <Style Selector="Expander">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- If the border persists on the header or content presenter parts -->
+        <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="Expander /template/ Border#ContentRegion">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+<!-- Control Template for TabControl with bottom-anchored tabs -->
+    <Style Selector="TabControl.BottomTabs">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="*, Auto">
+                    <!-- Top Content Area: Expands to fill all remaining vertical space -->
+                    <ContentPresenter Name="PART_SelectedContentHost" 
+                                      Grid.Row="0"
+                                      VerticalAlignment="Stretch"
+                                      HorizontalAlignment="Stretch"
+                                      Content="{TemplateBinding SelectedContent}"
+                                      ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+
+                    <!-- Bottom Tab Strip: Anchored to the bottom edge of the card -->
+                    <ItemsPresenter Name="PART_ItemsPresenter" 
+                                    Grid.Row="1"
+                                    Margin="4,0,4,4"
+                                    HorizontalAlignment="Left">
+                        <ItemsPresenter.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4"/>
+                            </ItemsPanelTemplate>
+                        </ItemsPresenter.ItemsPanel>
+                    </ItemsPresenter>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- TabItem Styles (Small font, rounded corners, dark background) -->
+    <Style Selector="TabControl.BottomTabs TabItem">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="Padding" Value="10,3"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#888888"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style Selector="TabControl.BottomTabs TabItem:selected">
+        <Setter Property="Background" Value="#3a3a3a"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+
+    <!-- Rounded corners on all 4 edges of the selected tab -->
+    <Style Selector="TabControl.BottomTabs TabItem /template/ Border#LayoutRoot">
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Background" Value="{TemplateBinding Background}"/>
+    </Style>
+
+    <!-- Suppress default selection pipe -->
+    <Style Selector="TabControl.BottomTabs TabItem /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Top Navigation / Menus -->
+        <DockPanel Grid.Row="0" Background="{StaticResource BackgroundColor}">
+            <!-- Left Menus -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Menu>
+                    <MenuItem Header="📑 _File">
+                        <MenuItem Header="📑 _New" Command="{Binding NewCommand}" InputGesture="Ctrl+N"/>
+                        
+                        <MenuItem Header="🗂️ _Templates" ItemsSource="{Binding Templates}">
+                            <MenuItem.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Value}"/>
+                                </DataTemplate>
+                            </MenuItem.ItemTemplate>
+                        </MenuItem>
+
+                        <MenuItem Header="📜 Recents" ItemsSource="{Binding RecentFilePaths}" IsEnabled="{Binding HasRecentFiles}">
+                            <MenuItem.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </MenuItem.ItemTemplate>
+                        </MenuItem>
+
+                        <MenuItem Header="📂 _Load..." Command="{Binding ShowLoadParamsDialogCommand}" InputGesture="Ctrl+O"/>
+                        <MenuItem Header="💾 _Save" Command="{Binding SaveParamsCommand}" InputGesture="Ctrl+S"/>
+                        <MenuItem Header="💾 _Save as..." Command="{Binding SaveParamsAsCommand}" InputGesture="Ctrl+Shift+S"/>
+                        <Separator/>
+                        <MenuItem Header="📝 Copy params" InputGesture="Ctrl+C"/>
+                        <MenuItem Header="📋 Paste params" InputGesture="Ctrl+V"/>
+                        <Separator/>
+                        <MenuItem Header="⚙️ Settings..." x:Name="SettingsMenuItem" Click="SettingsMenuItem_Click"/>
+                        <Separator/>
+                        <MenuItem Header="🏃‍ Exit" Command="{Binding ExitApplicationCommand}" InputGesture="Alt+F4"/>
+                    </MenuItem>
+
+                    <MenuItem Header="💾" Command="{Binding SaveParamsCommand}" ToolTip.Tip="Save (Ctrl+S)"/>
+                </Menu>
+
+                <Separator Width="1" Margin="4,2" Background="#444444"/>
+
+                <Menu>
+                    <MenuItem Header="Editor" x:Name="EditorMenuItem" Click="EditorMenuItem_Click" ToolTip.Tip="Open the editor window"/>
+                    <MenuItem Header="🔮 Generator" x:Name="GeneratorMenuItem" Click="GeneratorMenuItem_Click" ToolTip.Tip="Open the generator window"/>
+                    <MenuItem Header="🎲 _Random" Command="{Binding LoadRandomCommand}" ToolTip.Tip="Generate random params (Ctrl+R)" InputGesture="Ctrl+R"/>
+                </Menu>
+
+                <Separator Width="1" Margin="4,2" Background="#444444"/>
+                <local:TitleBox Width="200" Height="30"/>
+
+                <Menu>
+                    <MenuItem Header="E_xport">
+                        <MenuItem Header="📋 Export to _clipboard" Command="{Binding ExportToClipboardCommand}" InputGesture="Ctrl+Shift+C"/>
+                        <MenuItem Header="📊 Export to _EXR..." Command="{Binding SaveExrCommand}" InputGesture="Ctrl+Shift+E"/>
+                        <MenuItem Header="🖼 Export to _PNG..." Command="{Binding SaveImageCommand}" InputGesture="Ctrl+E"/>
+                        <Separator/>
+                        <MenuItem Header="🎥 Export _animation frames..." Command="{Binding AnimationViewModel.StartExportingFramesCommand}" InputGesture="Ctrl+A"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+
+            <!-- Right Help/Tutorials Menu -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <Menu>
+                    <MenuItem Header="🎓 Tutorials..." InputGesture="F1" Command="{Binding VisitWikiCommand}"/>
+                    <MenuItem Header="Help">
+                        <MenuItem Header="📚 Wiki..." InputGesture="F1" Command="{Binding VisitWikiCommand}"/>
+                        <MenuItem Header="🏛️ Forum..." Command="{Binding VisitForumCommand}"/>
+                        <MenuItem Header="🙋 Send Feedback">
+                            <MenuItem Header="🐞 Report a bug..." Command="{Binding ReportBugCommand}"/>
+                            <MenuItem Header="🙋 File an issue..." Command="{Binding VisitIssuesCommand}"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="👷 About..." x:Name="AboutMenuItem" Click="AboutMenuItem_Click"/>
+                        <MenuItem Header="💿 Check for updates..." Command="{Binding CheckUpdatesCommand}"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Main Docking Workspace Area -->
+        <Grid Grid.Row="1" ColumnDefinitions="220,*,260" Background="{StaticResource BackgroundColor}">
+            
+            <!-- Left Side Control Panels -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <!-- 1. Change outer container from StackPanel to Grid with rows -->
+                <Grid RowDefinitions="Auto, Auto, *" Margin="8">
+                    
+                    <!-- Row 0: Tonemapping Pane -->
+                    <Border Grid.Row="0" x:Name="tonemappingPane" CornerRadius="4" Padding="0" Margin="0,0,0,10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Tonemapping" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                            <local:ToneMappingView DataContext="{Binding ToneMappingViewModel}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Row 1: Environment Pane -->
+                    <Border Grid.Row="1" x:Name="environmentPane" CornerRadius="4" Padding="0" Margin="0,0,0,10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Environment" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                            <TextBlock Text="Background Color" Foreground="#CCCCCC" FontSize="12"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <ColorPicker Grid.Column="0" Margin="0,0,8,0"
+                                        Color="{Binding IFSViewModel.BackgroundColor}"
+                                        IsEnabled="{Binding IsColorPickerEnabled}"/>
+                                <CheckBox Grid.Column="1" VerticalAlignment="Center"
+                                        ToolTip.Tip="Transparent background"
+                                        IsChecked="{Binding TransparentBackground}"
+                                        Content="Transparent"/>
+                            </Grid>
+                            <local:ValueSlider Value="{Binding Ifs.FogEffect}" 
+                                            SliderSettings="{Binding IFSViewModel.FogEffectSlider}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Row 2: Camera & Navigation Card (Stretches to fill all remaining height) -->
+                    <Border Grid.Row="2"
+                            CornerRadius="6" 
+                            VerticalAlignment="Stretch">
+                        
+                        <TabControl Classes="BottomTabs">
+                            <TabItem Header="Camera">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Camera" FontWeight="Bold" Foreground="White" Margin="0,10,0,4"/>
+                                    <local:CameraSettingsView DataContext="{Binding CameraSettingsViewModel}"/>
+                                </StackPanel>
+                            </TabItem>
+                            
+                            <TabItem Header="Navigation">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Navigation" FontWeight="Bold" Foreground="White" Margin="0,10,0,4"/>
+                                    <local:CameraNavigationPanel DataContext="{Binding CameraSettingsViewModel}"/>
+                                </StackPanel>
+                            </TabItem>
+                        </TabControl>
+                    </Border>
+
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Middle Canvas & Viewport Surface -->
+            <Grid Grid.Column="1" RowDefinitions="*, 300">
+                <!-- Main Document Area (Replacing LayoutDocumentPane) -->
+                <Border Grid.Row="0" Background="Black" CornerRadius="4" Margin="0,0,0,4" ClipToBounds="True">
+                    <Grid>
+                        <disp:InteractiveDisplay x:Name="mainDisplay"
+                            IsVisible="True"
+                            InteractionStartedCommand="{Binding TakeSnapshotCommand}"
+                            InteractionFinishedCommand="{Binding InteractionFinishedCommand}"
+                            Sensitivity="{Binding Sensitivity}"
+                            SizeChanged="mainDisplay_DisplayResolutionChanged"
+                            InvertRotationAxisY="{Binding InvertAxisY}"/>
+                        
+                        <local:ControlHintsPanel
+                                                IsVisible="{Binding IsHintsPanelVisible}"
+                                                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="16"/>
+                                                
+                        <ProgressBar IsIndeterminate="True"
+                                    IsVisible="{Binding Path=., Converter={x:Static converters:ObjectConverters.IsNull}}"
+                                    Width="50" Height="20"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Animations Panel (Replacing LayoutAnchorablePane) -->
+                <Border Grid.Row="1" x:Name="animationsPanel" CornerRadius="4" Background="#333333" Padding="8">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Animations" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                            <animation:AnimationPanel DataContext="{Binding AnimationViewModel}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- Right Side Settings Panels -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <!-- 1. Change outer container from StackPanel to Grid with rows -->
+                <Grid RowDefinitions="*, Auto" Margin="8">
+                    
+                    <Border Grid.Row="0"
+                            CornerRadius="6" 
+                            VerticalAlignment="Stretch">
+                        
+                        <TabControl Classes="BottomTabs">
+                            <TabItem Header="Rendering Settings">
+                                <StackPanel x:Name="renderingSettingsPane" Spacing="8">
+                                    <TextBlock Text="Rendering Settings" FontWeight="Bold" Foreground="White" Margin="0,10,0,4"/>
+                                    <local:QualitySettingsView DataContext="{Binding QualitySettingsViewModel}"/>
+                                </StackPanel>
+                            </TabItem>
+                            
+                            <TabItem Header="Post Fx">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Post Fx" FontWeight="Bold" Foreground="White" Margin="0,10,0,4"/>
+                                    <local:PostFxPanel DataContext="{Binding PostFxPanelViewModel}"/>
+                                </StackPanel>
+                            </TabItem>
+                        </TabControl>
+                    </Border>
+
+                    <!-- Performance Pane: Docked to the bottom of the panel area -->
+                    <Border Grid.Row="1" x:Name="performancePane" DockPanel.Dock="Bottom" CornerRadius="4" Padding="4" Margin="0,20,0,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Performance" FontWeight="Bold" Foreground="White" Margin="0,0,0,4"/>
+                                <local:Testing IsVisible="False" x:Name="TestingComponent" />
+                                <local:PerformanceView DataContext="{Binding PerformanceViewModel}"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                </Grid>
+            </ScrollViewer>
+
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#007ACC" Padding="6,3">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left"
+                           Text="{Binding StatusBarText}"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Button Command="{Binding StartStopRenderingCommand}"
+                            Content="{Binding IsRenderingIcon}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="White"
+                            Padding="4,2"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <ProgressBar Width="100" Height="12" Value="{Binding IterationProgressPercent, Mode=OneWay}"/>
+                        <TextBlock Foreground="White" FontSize="11" VerticalAlignment="Center">
+                            <Run Text="Progress: "/>
+                            <Run Text="{Binding IterationLevel, Mode=OneWay}"/>
+                            <Run Text=" / "/>
+                            <Run Text="{Binding Ifs.TargetIterationLevel, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</Window>

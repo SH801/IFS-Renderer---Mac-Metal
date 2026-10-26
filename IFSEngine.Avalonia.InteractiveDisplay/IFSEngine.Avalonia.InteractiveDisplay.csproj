@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-macos</TargetFramework>
+        <OutputType>Library</OutputType>
+        <Version>1.5.0</Version>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+        <Authors>bezo97</Authors>
+        <Company>bezo97</Company>
+        <Description>Avalonia UIElement for IFSEngine, a 3D IFS fractal rendering engine.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageIcon>icon_128.png</PackageIcon>
+        <PackageProjectUrl>https://github.com/bezo97/IFSRenderer</PackageProjectUrl>
+        <Copyright>Copyright (C) 2021-2026 Dócs Zoltán &amp; Contributors</Copyright>
+        <RepositoryUrl>https://github.com/bezo97/IFSRenderer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageTags>fractal;3d;graphics;art;ifs;rendering;interactive;avalonia</PackageTags>
+        <PackageReleaseNotes>https://github.com/bezo97/IFSRenderer/releases</PackageReleaseNotes>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);NU1903</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.1.4" />
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\IFSEngine\IFSEngine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\Assets\icon_128.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+            <Visible>False</Visible>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

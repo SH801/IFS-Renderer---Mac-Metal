@@ -1,0 +1,19 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="250"
+             x:Name="toneMappingView"
+             x:Class="MacDisplay.Views.ToneMappingView"
+             Padding="2"
+             x:DataType="vm:ToneMappingViewModel">
+    <StackPanel Spacing="2">
+        <local:ValueSlider Value="{Binding Ifs.Brightness}" SliderSettings="{Binding BrightnessSlider}"/>
+        <local:ValueSlider Value="{Binding Ifs.Gamma}" SliderSettings="{Binding GammaSettings}"/>
+        <local:ValueSlider Value="{Binding Ifs.GammaThreshold}" SliderSettings="{Binding GammaThresholdSettings}"/>
+        <local:ValueSlider Value="{Binding Ifs.Vibrancy}" SliderSettings="{Binding VibrancySettings}"/>
+    </StackPanel>
+</UserControl>

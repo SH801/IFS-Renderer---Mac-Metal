@@ -1,0 +1,64 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             x:Name="nodeMap"
+             x:Class="MacDisplay.Views.NodeMap"
+             d:DesignHeight="450" d:DesignWidth="800"
+             x:DataType="vm:IFSViewModel">
+             
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="bgBrush" Color="Gray"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Avalonia Zoom/Pan container wrapper -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="wrapperGrid" ClipToBounds="False" Background="{StaticResource bgBrush}">
+                <!-- Temporary arrow which indicates a new connection being dragged -->
+                <Canvas>
+                    <local:ConnectionArrow x:Name="dragArrow"
+                        StartPoint="{Binding ConnectingIterator.Position}"
+                        IsVisible="{Binding ConnectingIterator, Converter={StaticResource NullToBoolConverter}}"/>
+                </Canvas>
+                
+                <!-- Map Nodes and Arrows to Iterators and weights -->
+                <ItemsControl ItemsSource="{Binding NodeMapElements}" x:Name="itemsControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas x:Name="itemsPanel"
+                                    Width="{Binding #nodeMap.Bounds.Width}" 
+                                    Height="{Binding #nodeMap.Bounds.Height}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    
+                    <ItemsControl.ItemContainerTheme>
+                        <ControlTheme TargetType="ContentPresenter" x:CompileBindings="False">
+                            <Setter Property="Canvas.ZIndex" Value="{Binding ForegroundZIndex}"/>
+                        </ControlTheme>
+                    </ItemsControl.ItemContainerTheme>
+
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="{x:Type vm:IteratorViewModel}">
+                            <local:Node
+                                Position="{Binding Position, Mode=TwoWay}"
+                                ParentCanvas="{Binding $parent[Canvas]}"
+                                SelectCommand="{Binding #nodeMap.((vm:IFSViewModel)DataContext).SelectIteratorCommand}">
+                            </local:Node>
+                        </DataTemplate>
+                        
+                        <DataTemplate DataType="{x:Type vm:ConnectionViewModel}">
+                            <local:ConnectionArrow
+                                StartPoint="{Binding StartPoint}"
+                                EndPoint="{Binding EndPoint}"
+                                SelectCommand="{Binding #nodeMap.((vm:IFSViewModel)DataContext).SelectConnectionCommand}"/>
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

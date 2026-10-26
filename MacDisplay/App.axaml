@@ -1,0 +1,31 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:MacDisplay.Converters"
+             xmlns:sys="using:System"
+             x:Class="MacDisplay.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Converters -->
+            <conv:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <conv:NullVisibilityConverter x:Key="nullVisibilityConverter"/>
+            <conv:EqualityToVisibilityConverter x:Key="equalityToVisibilityConverter"/>
+            <conv:BetterBooleanToVisibilityConverter x:Key="betterBooleanToVisibilityConverter"/>
+            <conv:BetterBooleanToVisibilityConverter x:Key="invertBooleanToVisibilityConverter" True="Collapsed" False="Visible"/>
+            <conv:ParameterEqualityToBoolConverter x:Key="parameterEqualityToBoolConverter"/>
+            <conv:BooleanConverter x:Key="invertBooleanConverter" True="False" False="True"/>
+
+            <!-- System Constants -->
+            <sys:Int32 x:Key="zero">0</sys:Int32>
+            <sys:Boolean x:Key="false">False</sys:Boolean>
+            <sys:Boolean x:Key="true">True</sys:Boolean>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

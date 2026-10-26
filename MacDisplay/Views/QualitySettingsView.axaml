@@ -1,0 +1,107 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views" 
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             x:Name="qualitySettingsView"
+             Padding="0"
+             x:Class="MacDisplay.Views.QualitySettingsView"
+             d:DesignHeight="600" d:DesignWidth="300"
+             x:DataType="vm:QualitySettingsViewModel">
+    <StackPanel Spacing="4">
+        <ListBox HorizontalAlignment="Center"
+                 Margin="4"
+                 SelectedIndex="0">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            
+            <ListBoxItem>🧭 Exploration</ListBoxItem>
+            <ListBoxItem IsSelected="{Binding IsFinalRenderingMode}">📸 Final</ListBoxItem>
+        </ListBox>        
+
+        <!-- "Preview" settings -->
+        <StackPanel IsVisible="{Binding IsFinalRenderingMode, Converter={StaticResource InverseBoolConverter}}">
+            <TextBlock HorizontalAlignment="Center" Margin="4,16">
+                Preview resolution: <Run Text="{Binding PreviewResolutionText, Mode=OneWay}" />
+            </TextBlock>
+        </StackPanel>
+        
+        <!-- "Final" settings -->
+        <StackPanel IsVisible="{Binding IsFinalRenderingMode}" Margin="0,8">
+            <Grid HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" RowSpacing="4" Margin="0,16,0,22">
+                    <!-- Width Row -->
+                    <TextBlock Text="Width" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                    <NumericUpDown Value="{Binding ImageWidth, UpdateSourceTrigger=PropertyChanged}"
+                                Minimum="1" Increment="100"
+                                ToolTip.Tip="Image width"
+                                Grid.Row="0" Grid.Column="1"  Margin="0"/>
+
+                    <!-- Lock Aspect Ratio Button (spanning both rows vertically) -->
+                    <ToggleButton IsChecked="{Binding IsResolutionLinked}" 
+                                Width="30" Height="30" FontSize="14" Background="Transparent"
+                                Theme="{StaticResource MaterialDesignFlatToggleButton}"
+                                ToolTip.Tip="Lock aspect ratio"
+                                Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" 
+                                VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,0">🔗</ToggleButton>
+
+                    <!-- Height Row -->
+                    <TextBlock Text="Height" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                    <NumericUpDown Value="{Binding ImageHeight, UpdateSourceTrigger=PropertyChanged}"
+                                Minimum="1" Increment="100"
+                                ToolTip.Tip="Image height"
+                                Grid.Row="1" Grid.Column="1" Margin="0"/>
+                </Grid>                        
+
+                <Menu Grid.Column="3" Height="22">
+                    <MenuItem Header="⋮" ToolTip.Tip="Resolution presets"
+                            HorizontalAlignment="Right" Padding="8,4" FontSize="14" Height="30"
+                            ItemsSource="{Binding ResolutionPresetsList}">
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <MenuItem Header="{Binding Name}"
+                                        Command="{Binding #qualitySettingsView.((vm:QualitySettingsViewModel)DataContext).ApplyResolutionPresetCommand}"
+                                        CommandParameter="{Binding Dimensions}"
+                                        x:CompileBindings="False"/>
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
+                    </MenuItem>
+                </Menu>
+
+            </Grid>
+            
+            <local:ValueSlider 
+                    Value="{Binding Renderer.MaxFilterRadius}" 
+                    SliderSettings="{Binding MaxFilterRadiusSlider}" 
+                    Label="{Binding MaxFilterRadiusLabel}" 
+                    Margin="4"/>
+        </StackPanel>
+        
+        <Separator Margin="0,8,0,8"/>
+        <local:ValueSlider Value="{Binding Ifs.TargetIterationLevel}" SliderSettings="{Binding TargetIterationLevelSlider}" Margin="0"/>
+        <Separator Margin="0,8,0,8"/>
+        
+        <StackPanel Margin="0,8,0,8" Spacing="4">
+            <CheckBox IsChecked="{Binding EnableDE}" ToolTip.Tip="Using density estimation.">Noise reduction</CheckBox>
+            <StackPanel IsVisible="{Binding EnableDE}" Margin="0" Spacing="4">
+                <local:ValueSlider Value="{Binding Renderer.DEMaxRadius}" SliderSettings="{Binding DEMaxRadiusSlider}" Margin="0,8"/>
+                <local:ValueSlider Value="{Binding Renderer.DEPower}" SliderSettings="{Binding DEPowerSlider}" Margin="0,8"/>
+                <local:ValueSlider Value="{Binding Renderer.DEThreshold}" SliderSettings="{Binding DEThresholdSlider}" Margin="0,8"/>
+            </StackPanel>
+            <local:ValueSlider Value="{Binding Syntropy}" SliderSettings="{Binding SyntropySlider}" Margin="0,8"/>
+            <local:ValueSlider Value="{Binding Ifs.Warmup}" SliderSettings="{Binding WarmupSlider}" Margin="0,8"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

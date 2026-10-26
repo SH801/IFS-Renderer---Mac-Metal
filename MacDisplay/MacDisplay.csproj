@@ -1,0 +1,222 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-macos</TargetFramework>
+    <AssemblyName>IFSRenderer</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationId>com.ifsrenderer.macos</ApplicationId>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <IsTrimmable>false</IsTrimmable>
+    <NoWarn>$(NoWarn);IL2026;NU1903</NoWarn>
+    <Configurations>Debug;ReleasePortable;ReleaseInstaller</Configurations>
+    <Version>1.5.0</Version>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <!-- Configurations -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleasePortable|AnyCPU'">
+    <DefineConstants>TRACE;PORTABLE</DefineConstants>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseInstaller|AnyCPU'">
+    <DefineConstants>TRACE;INSTALLER</DefineConstants>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;PORTABLE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BundleResource Include="Assets/icon_128.png" />
+
+    <!-- Tell the macOS build target to merge your custom Info.plist keys -->
+    <None Include="Info.plist" Condition="Exists('Info.plist')" />      
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Avalonia UI Core & Theme Packages -->
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.1.4" />
+
+    <!-- MVVM Toolkit -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+
+    <!-- Configuration & Settings Support -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+
+    <!-- Image Processing -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.1.3" />
+
+    <!-- Audio & Spatial Processing (Cavern) -->
+    <PackageReference Include="Cavern" Version="2.1.0" />
+    <PackageReference Include="Cavern.Format" Version="2.1.0" />
+    <PackageReference Include="Cavern.QuickEQ" Version="2.1.0" />
+
+    <!-- Graphics / OpenTK -->
+    <PackageReference Include="OpenTK" Version="4.9.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IFSEngine\IFSEngine.csproj" />
+    <ProjectReference Include="..\IFSEngine.Avalonia.InteractiveDisplay\IFSEngine.Avalonia.InteractiveDisplay.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="App.config" Link="MacDisplay.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Library and Preset Assets (Portable / Debug) -->
+  <ItemGroup Condition="'$(Configuration)'=='ReleasePortable' OR '$(Configuration)'=='Debug'">
+    <Content Include="..\IFSTransforms\Transforms\**\*.ifstf">
+      <Link>Library\Transforms%(RecursiveDir)\%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Includes\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Templates\*.ifsjson">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\PostEffects\*.ifsfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Palettes\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\FfmpegPresets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\ResolutionPresets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Library and Preset Assets (Installer) -->
+  <ItemGroup Condition="'$(Configuration)'=='ReleaseInstaller'">
+    <Content Include="..\IFSTransforms\Transforms\**\*.ifstf">
+      <Link>Library\Transforms%(RecursiveDir)\%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Includes\*.*">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Templates\*.ifsjson">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\PostEffects\*.ifsfx">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\Palettes\*.*">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\FfmpegPresets.json">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Library\ResolutionPresets.json">
+      <CopyToOutputDirectory>false</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Resources/featured_artwork.jpg" />
+    <AvaloniaResource Include="Resources/icon_128.png" />
+    <Content Include="..\LICENSE" Link="LICENSE">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Target to explicitly copy it into the macOS app bundle structure post-build -->
+  <Target Name="CopyResolutionPresetsToBundle" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <PropertyGroup>
+      <AppBundleDir>$(OutputPath)$(AssemblyName).app</AppBundleDir>
+      <TargetBundleDir>$(AppBundleDir)/Contents/MonoBundle/Library</TargetBundleDir>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(TargetBundleDir)" Condition="!Exists('$(TargetBundleDir)')" />
+    
+    <Copy SourceFiles="Library/ResolutionPresets.json" 
+          DestinationFolder="$(TargetBundleDir)" 
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyIFSTransforms" AfterTargets="Build">
+      <!-- Define dynamic paths using MSBuild properties -->
+      <PropertyGroup>
+          <!-- Adjust this relative path if IFSTransforms is located elsewhere relative to your project file -->
+          <TransformsSourceDir>$(MSBuildProjectDirectory)/../IFSTransforms/Transforms</TransformsSourceDir>
+          <TransformsDestDir>$(TargetDir)IFSRenderer.app/Contents/MonoBundle/Transforms</TransformsDestDir>
+      </PropertyGroup>
+
+      <Message Importance="high" Text="Copying IFS transforms to app bundle: $(TransformsDestDir)" />
+
+      <!-- Collect all files recursively from the source directory -->
+      <ItemGroup>
+          <TransformFiles Include="$(TransformsSourceDir)/**/*" />
+      </ItemGroup>
+
+      <!-- Copy files while preserving directory structure -->
+      <Copy SourceFiles="@(TransformFiles)"
+            DestinationFiles="@(TransformFiles->'$(TransformsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+            SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyPostEffects" AfterTargets="Build">
+      <PropertyGroup>
+          <PostEffectsSourceDir>$(MSBuildProjectDirectory)/Library/PostEffects</PostEffectsSourceDir>
+          <PostEffectsDestDir>$(TargetDir)IFSRenderer.app/Contents/MonoBundle/PostEffects</PostEffectsDestDir>
+      </PropertyGroup>
+
+      <Message Importance="high" Text="Copying PostEffects shaders to app bundle: $(PostEffectsDestDir)" />
+
+      <ItemGroup>
+          <PostEffectFiles Include="$(PostEffectsSourceDir)/**/*" />
+      </ItemGroup>
+
+      <Copy SourceFiles="@(PostEffectFiles)"
+            DestinationFiles="@(PostEffectFiles->'$(PostEffectsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+            SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="SignAppBundle" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <PropertyGroup>
+      <!-- Adjust this path if your .app bundle outputs to a different directory -->
+      <AppBundlePath>$(OutputPath)IFSRenderer.app</AppBundlePath>
+    </PropertyGroup>
+    
+    <Message Text="Running ad-hoc code signing for macOS app bundle..." Importance="High" />
+    
+    <Exec Command="codesign --force --deep --sign - &quot;$(AppBundlePath)&quot;" />
+  </Target>
+
+  <!-- Automatically copy the built .app bundle to the parent folder after a successful build -->
+  <Target Name="CopyAppBundleToParent" AfterTargets="Build">
+    <PropertyGroup>
+      <!-- Points to the output .app directory inside bin/Debug/... or bin/Release/... -->
+      <AppSourceDir>$(OutputPath)$(AssemblyName).app/</AppSourceDir>
+      <!-- Points to your main IFS Renderer folder (one level above MacDisplay) -->
+      <AppDestDir>$(MSBuildProjectDirectory)\..\</AppDestDir>
+    </PropertyGroup>
+
+    <!-- Ensure the source exists before copying -->
+    <Message Text="Copying $(AssemblyName).app to root folder..." Importance="high" />
+    
+    <!-- Copy all contents of the .app bundle recursively to the parent folder -->
+    <ItemGroup>
+      <AppFiles Include="$(AppSourceDir)**\*.*" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(AppFiles)"
+          DestinationFiles="@(AppFiles->'$(AppDestDir)$(AssemblyName).app\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

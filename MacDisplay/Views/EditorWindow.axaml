@@ -1,0 +1,185 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="using:System"
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+        x:Class="MacDisplay.Views.EditorWindow"
+        mc:Ignorable="d"
+        Title="Editor" 
+        Width="1280" Height="720"
+        x:Name="editorWindow"
+        x:DataType="vm:IFSViewModel"
+        DragDrop.AllowDrop="True">
+    
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+P" Command="{Binding LoadPaletteCommand}"/>
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding ReloadTransformsCommand}"/>
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding SelectedIterator.FlipWeightCommand}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding SelectedIterator.FlipOpacityCommand}"/>
+        <KeyBinding Gesture="Ctrl+D" Command="{Binding DuplicateSelectedCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+D" Command="{Binding SplitSelectedCommand}"/>
+        <KeyBinding Gesture="Delete" Command="{Binding RemoveSelectedCommand}"/>
+    </Window.KeyBindings>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="↩️" 
+                      Command="{Binding UndoCommand}" 
+                      ToolTip.Tip="Undo (Ctrl+Z)" 
+                      InputGesture="Ctrl+Z"/>
+            <MenuItem Header="↪️" 
+                      Command="{Binding RedoCommand}" 
+                      ToolTip.Tip="Redo (Ctrl+Y)" 
+                      InputGesture="Ctrl+Y"/>
+            <Separator/>
+            <local:PaletteButton
+    Command="{Binding LoadPaletteCommand}" 
+    Palette="{Binding Palette}"
+    ToolTip.Tip="Load Palette (Ctrl+P)"
+    Padding="30,8,30,8">🎨</local:PaletteButton>
+            <MenuItem Header="🗎 🗎"
+                      Command="{Binding DuplicateSelectedCommand}"
+                      ToolTip.Tip="Duplicate selection (Ctrl+D)" 
+                      InputGesture="Ctrl+D"/>
+            <MenuItem Header="🗎|🗎" 
+                      Command="{Binding SplitSelectedCommand}"
+                      ToolTip.Tip="Split selection (Ctrl+Shift+D)" 
+                      InputGesture="Ctrl+Shift+D"/>
+        </Menu>
+
+        <!-- Main Workspace Area -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+            <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                
+                <!-- Transforms Sidebar -->
+                <Grid Grid.Column="0" Margin="4,0,0,0" Width="175" RowDefinitions="Auto,Auto,*">
+                    <Grid Grid.Row="0">
+                        <TextBlock Text="Transforms" VerticalAlignment="Center" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Command="{Binding ReloadTransformsCommand}"
+                                    ToolTip.Tip="Reload plugins (Ctrl+R)">🔄</Button>
+                            <Button Command="{Binding OpenTransformsDirectoryCommand}"
+                                    ToolTip.Tip="Open plugin directory">📂</Button>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <TextBox Grid.Row="1" 
+                             Text="{Binding TransformSearchFilter, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="Filter by name, tags"/>
+                             
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,14,0">
+                                <ItemsControl ItemsSource="{Binding FilteredTransforms}" HorizontalAlignment="Stretch">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:CompileBindings="False">
+                                            <Button x:Name="transformButton"
+                                                    Command="{Binding DataContext.AddIteratorCommand, ElementName=editorWindow}" 
+                                                    CommandParameter="{Binding}" 
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch" 
+                                                    Margin="0,2,0,2"
+                                                    Padding="0,4">
+                                            <Button.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem IsHitTestVisible="False">
+                                                        <MenuItem.Header>
+                                                            <StackPanel Orientation="Vertical">
+                                                                <TextBlock FontSize="18" FontWeight="Bold" Text="{Binding Name}"/>
+                                                                <ItemsControl ItemsSource="{Binding Tags}">
+                                                                    <ItemsControl.ItemsPanel>
+                                                                        <ItemsPanelTemplate>
+                                                                            <StackPanel Orientation="Horizontal"/>
+                                                                        </ItemsPanelTemplate>
+                                                                    </ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate x:CompileBindings="False">
+                                                                            <Border Background="#333" CornerRadius="4" Padding="6,2" Margin="2">
+                                                                                <TextBlock Text="{Binding}"/>
+                                                                            </Border>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <TextBlock FontWeight="Bold" Text="Description" Margin="0,4,0,0"/>
+                                                                <TextBlock Text="{Binding Description}" MaxWidth="200" TextWrapping="Wrap" Margin="8,0"/>
+                                                                <TextBlock FontWeight="Bold" Text="Include uses" Margin="0,4,0,0"/>
+                                                                <ItemsControl ItemsSource="{Binding IncludeUses}" Margin="8,0"/>
+                                                                <TextBlock Margin="8,0" Text="None">
+                                                                    <TextBlock.IsVisible>
+                                                                        <Binding Path="IncludeUses.Count">
+                                                                            <Binding.Converter>
+                                                                                <!-- Evaluates equality to zero -->
+                                                                            </Binding.Converter>
+                                                                        </Binding>
+                                                                    </TextBlock.IsVisible>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </MenuItem.Header>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem>
+                                                        <MenuItem.Header>
+                                                            <HyperlinkButton Content="ℹ️ Information..." NavigateUri="{Binding ReferenceUrl}" ToolTip.Tip="{Binding ReferenceUrl}"/>
+                                                        </MenuItem.Header>
+                                                    </MenuItem>
+                                                    <MenuItem
+                                                        Header="✏️ Edit source"
+                                                        Command="{Binding DataContext.EditTransformSourceCommand, ElementName=editorWindow}"
+                                                        CommandParameter="{Binding FilePath}"/>
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                            
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="24,4"/>
+                                                <Button Content="⋮" HorizontalAlignment="Right" Foreground="Gray">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <!-- Context items available via flyout if desired -->
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Separator/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+                
+                <!-- Node Map Workspace -->
+                <Border Grid.Column="1" Margin="4" VerticalAlignment="Stretch" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+                    <local:NodeMap DataContext="{Binding}"/>
+                </Border>
+            </Grid>
+            
+            <!-- Right Sidebar / Inspectors -->
+            <Border Grid.Column="1" Padding="6" Margin="4" VerticalAlignment="Stretch" Width="300" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+                    <StackPanel Margin="0,0,8,0">
+                        <Grid>
+                            <Grid.IsVisible>
+                                <Binding Path="IsIteratorEditorVisible"/>
+                            </Grid.IsVisible>
+                            <local:IteratorEditor DataContext="{Binding SelectedIterator}"/>
+                        </Grid>
+                        <Grid>
+                            <Grid.IsVisible>
+                                <Binding Path="IsConnectionEditorVisible"/>
+                            </Grid.IsVisible>
+                            <StackPanel>
+                                <TextBlock Margin="0,8" FontWeight="Bold" FontSize="16">
+                                    Selected Connection
+                                </TextBlock>
+                                <local:ValueSlider Value="{Binding SelectedConnection.Weight}" SliderSettings="{Binding SelectedConnection.WeightSlider}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

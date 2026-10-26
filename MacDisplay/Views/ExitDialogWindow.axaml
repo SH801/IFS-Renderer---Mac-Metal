@@ -1,0 +1,25 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        x:Class="MacDisplay.Views.ExitDialogWindow"
+        mc:Ignorable="d"
+        Title="Exit IFSRenderer" 
+        MinHeight="150" MinWidth="300"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowDecorations="Full"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="16" RowDefinitions="*,Auto">
+        <TextBlock Text="Are you sure you want to quit before saving your work?"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,24"/>
+                   
+        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+            <Button Margin="8,0,8,0" Click="SaveButton_Click">_Save...</Button>
+            <Button IsDefault="True" Margin="8,0,0,0" Click="QuitButton_Click">_Quit anyway</Button>
+        </StackPanel>
+    </Grid>
+</Window>

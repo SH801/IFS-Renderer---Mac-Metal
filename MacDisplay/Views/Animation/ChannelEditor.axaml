@@ -1,0 +1,70 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:MacDisplay.Views.Animation"
+             xmlns:common="using:MacDisplay.Views"
+             xmlns:vm="using:MacDisplay.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="200"
+             x:Class="MacDisplay.Views.Animation.ChannelEditor"
+             x:DataType="vm:ChannelViewModel">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Name}" Grid.Column="0"
+                         ToolTip.Tip="Name" PlaceholderText="Channel Name" TextAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Command="{Binding CloseChannelEditorCommand}"
+                        ToolTip.Tip="Close channel editor" Foreground="LightGreen"
+                        Background="Transparent" BorderThickness="0">
+                    ✓
+                </Button>
+            </Grid>
+            <TextBox Text="{Binding Path, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas"
+                     ToolTip.Tip="The property in the data structure that is controlled by this channel." PlaceholderText="Controlled value"/>
+            <Grid>
+                <TextBlock VerticalAlignment="Center">Channel Drivers</TextBlock>
+                <Menu HorizontalAlignment="Right">
+                    <MenuItem Header="+" FontSize="14">
+                        <MenuItem Header="🎵 Audio" Command="{Binding AddChannelDriverCommand}"/>
+                    </MenuItem>
+                </Menu>
+            </Grid>
+        </StackPanel>
+
+        <!-- Channel Drivers ScrollViewer -->
+        <ScrollViewer Grid.Row="1">
+            <ScrollViewer.RenderTransform>
+                <ScaleTransform ScaleX="0.75" ScaleY="0.75"/>
+            </ScrollViewer.RenderTransform>
+            <Expander IsVisible="{Binding HasAudioDriver}"
+                      IsExpanded="True"
+                      VerticalAlignment="Top" Margin="4,0">
+                <Expander.Header>
+                    <Grid Width="140">
+                        <CheckBox IsChecked="{Binding IsDriverEnabled}" Content="Audio Driver"/>
+                        <Button Command="{Binding RemoveChannelDriverCommand}" Padding="10,0" FontSize="9" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0">🗑️</Button>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel>
+                    <ComboBox ItemsSource="{Binding AnimationVM.LoadedAudioChannels}"
+                              SelectedItem="{Binding SelectedAudioChannelOption}"
+                              PlaceholderText="Audio channel"/>
+                    <common:ValueSlider Value="{Binding EffectStrength}" SliderSettings="{Binding EffectSlider}"/>
+                    <common:ValueSlider Value="{Binding MinFreq}" SliderSettings="{Binding MinFreqSlider}"/>
+                    <common:ValueSlider Value="{Binding MaxFreq}" SliderSettings="{Binding MaxFreqSlider}"/>
+                </StackPanel>
+            </Expander>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

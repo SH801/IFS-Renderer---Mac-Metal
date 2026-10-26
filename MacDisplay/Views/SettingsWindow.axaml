@@ -1,0 +1,228 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+        xmlns:local="clr-namespace:MacDisplay.Views"         
+        WindowStartupLocation="CenterOwner" 
+        ShowInTaskbar="False"
+        WindowDecorations="Full"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+        Title="⚙️ Settings" x:Name="settingsWindow"
+        x:Class="MacDisplay.Views.SettingsWindow"
+        Width="500" Height="500" MinWidth="500" MinHeight="500"
+        x:DataType="vm:SettingsViewModel">
+        
+    <Grid Margin="10" RowDefinitions="*,Auto">
+        <TabControl Grid.Row="0">
+            <!-- User settings tab -->
+            <TabItem Header="👤 User settings" MinWidth="150">
+                <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="0.75*,Auto,1*">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" FontSize="18" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,8">
+                        User settings
+                    </TextBlock>
+                    <!-- Author name -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Author name
+                    </TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="1"
+                               ToolTip.Tip="Optionally provide your name to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                             Text="{Binding AuthorName}" PlaceholderText="Provide an author name"/>
+                    <!-- Author link -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Author link
+                    </TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1" 
+                               ToolTip.Tip="Optionally provide a link to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                             Text="{Binding AuthorLink}" PlaceholderText="https://example.com"/>
+                    <!-- UseWhiteForBlankParams -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        White blank params
+                    </TextBlock>
+                    <TextBlock Grid.Row="3" Grid.Column="1"
+                               ToolTip.Tip="Check this to use a simple white palette instead of random colors When starting from scratch in blank params." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <CheckBox Grid.Row="3" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              IsChecked="{Binding UseWhiteForBlankParams}"/>
+                    <!-- IsWelcomeShownOnStartup -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Welcome screen
+                    </TextBlock>
+                    <TextBlock Grid.Row="4" Grid.Column="1"
+                               ToolTip.Tip="Option to hide or show the welcome screen when IFSRenderer starts." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <CheckBox Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              IsChecked="{Binding IsWelcomeShownOnStartup}"/>
+                    <!-- Notification -->
+                    <TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Gray">
+                        Notifications
+                    </TextBlock>
+                    <TextBlock Grid.Row="5" Grid.Column="1"
+                               ToolTip.Tip="Display a Windows notification when a render finishes. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <CheckBox Grid.Row="5" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              IsChecked="{Binding Notifications}" IsEnabled="False"/>
+                </Grid>
+            </TabItem>
+            
+            <!-- Controls tab -->
+            <TabItem Header="🕹️ Controls" MinWidth="150">
+                <Grid Margin="8" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="0.75*,Auto,1*">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" FontSize="18" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,8">
+                        Controls
+                    </TextBlock>
+                    <!-- Invert Axis -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Invert Y axis (pitch)
+                    </TextBlock>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <CheckBox IsChecked="{Binding InvertAxisY}" Margin="10">Enable</CheckBox>
+                    </StackPanel>
+                    <!-- Sensitivity -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Movement sensitivity
+                    </TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1"
+                               ToolTip.Tip="{Binding SensitivitySlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <local:ValueSlider Value="{Binding Sensitivity}" SliderSettings="{Binding SensitivitySlider}" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+            
+            <!-- Export options tab -->
+            <TabItem Header="🖼 Export options" MinWidth="150">
+                <StackPanel Margin="8" Spacing="8">
+                    <TextBlock FontSize="18" FontWeight="Bold" TextAlignment="Center">
+                        Export options
+                    </TextBlock>
+                    <Grid Margin="8" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="0.75*,Auto,1*">
+                        <!-- Metadata -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            Save metadata
+                        </TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   ToolTip.Tip="Whether to write metadata in the exported images. This includes title, authors, copyright, date of creation and keywords." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <CheckBox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsChecked="{Binding SaveMetadata}"/>
+                        <!-- Params in metadata -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            Include params
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   ToolTip.Tip="Whether to include fractal params in the image metadata. This makes it possible to drop or paste the image in the editor instead of loading param files." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsEnabled="{Binding SaveMetadata}"
+                                  IsChecked="{Binding IncludeParamsInMetadata}"/>
+                        <!-- Watermark -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            Apply watermark
+                        </TextBlock>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   ToolTip.Tip="Print the author name on exported images. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <CheckBox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  IsChecked="{Binding ApplyWatermark}" IsEnabled="False"/>
+                    </Grid>
+                </StackPanel>
+            </TabItem>
+            
+            <!-- Animations tab -->
+            <TabItem Header="🎥 Animations" MinWidth="150">
+                <StackPanel Margin="8" Spacing="8">
+                    <TextBlock FontSize="18" FontWeight="Bold" TextAlignment="Center">
+                        Animation export options
+                    </TextBlock>
+                    <StackPanel Margin="16,0" Spacing="4">
+                        <TextBlock>Frame export format:</TextBlock>
+                        <ListBox HorizontalAlignment="Right" Margin="4">
+                            <ListBoxItem IsSelected="{Binding IsRawFrameExportEnabled, Converter={StaticResource InverseBoolConverter}}">png (8-bit)</ListBoxItem>
+                            <ListBoxItem IsSelected="{Binding IsRawFrameExportEnabled}">exr (32-bit)</ListBoxItem>
+                        </ListBox>
+                        <StackPanel Orientation="Horizontal" Margin="0,8" Spacing="4">
+                            <Button Command="{Binding ShowFfmpegPathSelectorDialogCommand}"
+                                    Content="ffmpeg.exe:"
+                                    Padding="8"/>
+                            <TextBlock IsVisible="{Binding IsFfmpegPathSet, Converter={StaticResource InverseBoolConverter}}"
+                                       ToolTip.Tip="In order to save video files, install ffmpeg and select the executable." Text="ℹ️" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding FfmpegPath}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <CheckBox IsChecked="{Binding IsExportVideoFileEnabled}"
+                                  IsEnabled="{Binding IsFfmpegPathSet}">
+                            Save video file after frames have rendered
+                        </CheckBox>
+                        <StackPanel IsEnabled="{Binding IsExportVideoFileEnabled}" Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center">ffmpeg args: </TextBlock>
+                                    <TextBlock ToolTip.Tip="Provide additional ffmpeg settings here. IFSRenderer handles the following arguments: input, output, fps, audio." Text="ℹ️" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                </StackPanel>
+                                <Menu Grid.Column="1" Height="22" HorizontalAlignment="Right">
+                                    <MenuItem Header="▼ Presets" 
+                                              ItemsSource="{Binding FfmpegPresets}"
+                                              Padding="4" FontSize="12" Height="22">
+                                        <MenuItem.ItemTemplate>
+                                            <DataTemplate x:CompileBindings="False">
+                                                <TextBlock Text="{Binding Key}"/>
+                                            </DataTemplate>
+                                        </MenuItem.ItemTemplate>
+                                    </MenuItem>
+                                </Menu>
+                            </Grid>
+                            <TextBox Text="{Binding FfmpegArgs}"
+                                     TextWrapping="Wrap" AcceptsReturn="True" MinLines="5"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            
+            <!-- Performance tab -->
+            <TabItem Header="⏱️ Performance" MinWidth="150">
+                <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="0.75*,Auto,1*">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" FontSize="18" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,8">
+                        Performance settings
+                    </TextBlock>
+                    <!-- Perceptually uniform updates -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Perceptually uniform updates
+                    </TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="1"
+                               ToolTip.Tip="This option decreases the display framerate to allow more computing power on the iteration loop. Checked by default." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              IsChecked="{Binding PerceptuallyUniformUpdates}"/>
+                    <!-- Target Framerate -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Target Framerate
+                    </TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1"
+                               ToolTip.Tip="{Binding TargetFramerateSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <local:ValueSlider Value="{Binding TargetFramerate}" SliderSettings="{Binding TargetFramerateSlider}" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
+                    <!-- Workgroup -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        Workgroups
+                    </TextBlock>
+                    <TextBlock Grid.Row="3" Grid.Column="1"
+                               ToolTip.Tip="{Binding WorkgroupCountSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <local:ValueSlider Value="{Binding WorkgroupCount}" SliderSettings="{Binding WorkgroupCountSlider}" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        
+        <!-- Dialog Buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,10,0,0">
+            <Button Grid.Column="0"
+                    Command="{Binding CancelDialogCommand}"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="15"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                Cancel
+            </Button>
+            <Button Grid.Column="1"
+                    Command="{Binding OkDialogCommand}"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="15"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="💾" VerticalAlignment="Center"/>
+                    <TextBlock Text="Save" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

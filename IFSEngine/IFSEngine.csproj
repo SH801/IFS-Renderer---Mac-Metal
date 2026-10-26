@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>IFSEngine</RootNamespace>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <Authors>bezo97</Authors>
+        <Description>3D IFS fractal rendering engine.</Description>
+        <Copyright>Copyright (C) 2021-2026 Dócs Zoltán &amp; Contributors</Copyright>
+        <Version>1.5.0</Version>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/bezo97/IFSRenderer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/bezo97/IFSRenderer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageTags>fractal;3d;graphics;art;ifs;rendering</PackageTags>
+        <PackageReleaseNotes>https://github.com/bezo97/IFSRenderer/releases</PackageReleaseNotes>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon_128.png</PackageIcon>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Embedded MSL shader files and templates -->
+        <EmbeddedResource Include="Rendering\Shaders\**\*.shader" />
+        <EmbeddedResource Include="Rendering\Shaders\**\*.metal" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mixbox" Version="2.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
+        <PackageReference Include="SharpMetal" Version="1.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\Assets\icon_128.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+            <Visible>False</Visible>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

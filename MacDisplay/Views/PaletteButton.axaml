@@ -1,0 +1,39 @@
+﻿<Button xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        mc:Ignorable="d" 
+        x:Name="paletteButton"
+        x:Class="MacDisplay.Views.PaletteButton"
+        d:DesignHeight="450" d:DesignWidth="800">
+        
+    <Button.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+            <!-- Correct Avalonia tag; no x:Name allowed here -->
+            <GradientStops />
+        </LinearGradientBrush>
+    </Button.Background>
+    
+    <Button.Template>
+        <ControlTemplate TargetType="Button">
+            <Grid>
+                <!-- Colored background matching button background -->
+                <Panel Background="{TemplateBinding Background}"/>
+                
+                <!-- Text overlay with drop shadow effect -->
+                <TextBlock Text="{TemplateBinding Content}"
+                           Padding="{Binding Padding, ElementName=paletteButton}"
+                           Foreground="White"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Background="Transparent">
+                    <TextBlock.Effect>
+                        <DropShadowDirectionEffect Color="Black" BlurRadius="5" ShadowDepth="1"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+            </Grid>
+        </ControlTemplate>
+    </Button.Template>
+</Button>

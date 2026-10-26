@@ -1,0 +1,41 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             x:Class="MacDisplay.Views.ConnectionArrow"
+             mc:Ignorable="d" 
+             x:Name="connectionArrow" 
+             Cursor="Hand"
+             x:CompileBindings="False"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Styles>
+        <!-- Shadow effect when selected -->
+        <Style Selector="Path.selected">
+            <Setter Property="Effect">
+                <DropShadowEffect OffsetX="0" OffsetY="5" BlurRadius="20" Color="White"/>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid>
+        <!-- Transparent area around arrow for easier clicking -->
+        <Path x:Name="arrowClickArea"
+              StrokeThickness="20"
+              Stroke="Transparent"
+              Classes.selected="{Binding IsSelected, FallbackValue=False}"/>
+              
+        <!-- Arrow body -->
+        <Path x:Name="arrowBody"
+              Stroke="White"
+              StrokeThickness="2"
+              Classes.selected="{Binding IsSelected, FallbackValue=False}"/>
+              
+        <!-- Arrow head -->
+        <Path x:Name="arrowHead"
+              Stroke="White" 
+              StrokeThickness="2"
+              Classes.selected="{Binding IsSelected, FallbackValue=False}"/>
+    </Grid>
+</UserControl>

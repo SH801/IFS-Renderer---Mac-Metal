@@ -1,0 +1,44 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views" 
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="300"
+             x:Name="titleBox"
+             x:Class="MacDisplay.Views.TitleBox"
+             x:DataType="vm:MainViewModel">
+    <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBox Text="{Binding IFSTitle}" x:Name="titleTextBox" ToolTip.Tip="Title"
+                 PlaceholderText="Enter a title"
+                 TextAlignment="Center" FontWeight="Black" Grid.Column="0"
+                 GotFocus="titleTextBox_GotKeyboardFocus" KeyDown="titleTextBox_KeyDown"/>
+                 
+        <ToggleButton Grid.Column="1" x:Name="authorsToggle" ToolTip.Tip="Authors" Foreground="White" Cursor="Hand" Height="26" IsVisible="false"/>
+        
+        <Popup Grid.Column="2" IsOpen="{Binding IsChecked, ElementName=authorsToggle}"
+               Width="200" Placement="Bottom" IsLightDismissEnabled="True" 
+               HorizontalOffset="-100">
+            <Border Background="#222" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="4">
+                <StackPanel Spacing="4">
+                    <Grid>
+                        <TextBlock VerticalAlignment="Center" FontWeight="Bold">Authors:</TextBlock>
+                        <ToggleButton IsChecked="{Binding IsChecked, ElementName=authorsToggle}" 
+                                      HorizontalAlignment="Right" FontSize="8" Height="26"
+                                      Click="ClosePopup_Click">❌</ToggleButton>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding AuthorList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Margin="8">
+                                    <HyperlinkButton NavigateUri="{Binding Link}" ToolTip.Tip="{Binding Link}" Content="{Binding Name}"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

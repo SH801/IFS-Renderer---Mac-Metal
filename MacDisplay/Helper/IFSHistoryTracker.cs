@@ -1,0 +1,51 @@
+﻿#nullable enable
+using System;
+using System.Collections.Generic;
+using IFSEngine.Model;
+using MacDisplay.Serialization;
+
+namespace MacDisplay.Helper;
+
+public class IFSHistoryTracker
+{
+    private Stack<string> UndoStack { get; } = new();
+    private Stack<string> RedoStack { get; } = new();
+
+    public bool IsHistoryUndoable => UndoStack.Count > 0;
+    public bool IsHistoryRedoable => RedoStack.Count > 0;
+
+    public IFS Undo(IFS current, IEnumerable<TransformPlugin> transforms, IEnumerable<EffectPlugin> postfxs)
+    {
+        if (!IsHistoryUndoable)
+            throw new InvalidOperationException();
+
+        RedoStack.Push(IfsNodesSerializer.SerializeJsonString(current));
+        string lastState = UndoStack.Pop();
+        IFS restoredObject = IfsNodesSerializer.DeserializeJsonString(lastState, transforms, postfxs, true);
+        return restoredObject;
+    }
+
+    public IFS Redo(IFS current, IEnumerable<TransformPlugin> transforms, IEnumerable<EffectPlugin> postfxs)
+    {
+        if (!IsHistoryRedoable)
+            throw new InvalidOperationException();
+
+        UndoStack.Push(IfsNodesSerializer.SerializeJsonString(current));
+        string nextState = RedoStack.Pop();
+        IFS restoredObject = IfsNodesSerializer.DeserializeJsonString(nextState, transforms, postfxs, true);
+        return restoredObject;
+    }
+
+    public void TakeSnapshot(IFS trackedObject)
+    {
+        string snapshot = IfsNodesSerializer.SerializeJsonString(trackedObject);
+        RedoStack.Clear();
+        UndoStack.Push(snapshot);
+    }
+
+    public void Clear()
+    {
+        UndoStack.Clear();
+        RedoStack.Clear();
+    }
+}

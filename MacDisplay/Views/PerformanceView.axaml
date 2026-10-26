@@ -1,0 +1,26 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignWidth="350"
+             x:Name="performanceView"
+             x:Class="MacDisplay.Views.PerformanceView"
+             Padding="0"
+             x:DataType="vm:PerformanceViewModel">
+    <StackPanel Spacing="4">
+        <TextBlock Foreground="White" FontSize="16">
+            <Run Text="Framerate: "/><Run Text="{Binding Fps, Mode=OneWay}"/><Run Text=" fps"/>
+        </TextBlock>
+        <TextBlock Foreground="White" FontSize="16">
+            <Run Text="Workload size: "/><Run Text="{Binding InvocationIters, Mode=OneWay}"/><Run Text=" iterations"/>
+        </TextBlock>
+        <TextBlock Foreground="White" FontSize="16">
+            <Run Text="Iteration speed: "/><Run Text="{Binding IterationSpeed, Mode=OneWay}"/>
+        </TextBlock>
+        <TextBlock Foreground="White" FontSize="16">
+            <Run Text="Total iterations: "/><Run Text="{Binding TotalIterations, Mode=OneWay}"/>
+        </TextBlock>
+    </StackPanel>
+</UserControl>

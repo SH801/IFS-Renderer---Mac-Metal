@@ -1,0 +1,16 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             x:Name="vec3Control"
+             x:Class="MacDisplay.Views.Vec3Control">
+    <StackPanel Spacing="4">
+        <TextBlock VerticalAlignment="Center" Text="{Binding #vec3Control.Vec3Settings.Name}"/>
+        <local:ValueSlider Value="{Binding #vec3Control.XValue}" SliderSettings="{Binding #vec3Control.Vec3Settings.XSlider}"/>
+        <local:ValueSlider Value="{Binding #vec3Control.YValue}" SliderSettings="{Binding #vec3Control.Vec3Settings.YSlider}"/>
+        <local:ValueSlider Value="{Binding #vec3Control.ZValue}" SliderSettings="{Binding #vec3Control.Vec3Settings.ZSlider}"/>
+    </StackPanel>
+</UserControl>

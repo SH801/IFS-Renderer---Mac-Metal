@@ -1,0 +1,71 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MacDisplay"
+        x:Class="MacDisplay.Views.AboutDialogWindow"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner" 
+        ShowInTaskbar="False"
+        Title="About IFSRenderer"
+        Height="500" Width="600" MinHeight="500" MinWidth="600"
+        x:CompileBindings="False">
+    
+    <Grid Margin="10" RowDefinitions="*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="128,*">
+            <Image Grid.Column="0" Source="avares://IFSRenderer/Resources/icon_128.png" VerticalAlignment="Top"/>
+            
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Visible">
+                <StackPanel Spacing="10" Margin="10">
+                    <TextBlock Text="IFSRenderer" HorizontalAlignment="Center" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="Version 1.0.0" HorizontalAlignment="Center"/>
+                    
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="3D IFS fractal renderer and editor." TextWrapping="Wrap"/>
+                        
+                        <WrapPanel>
+                            <TextBlock Text="Copyright © 2021-2026 Dócs Zoltán &amp; " VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="contributors" NavigateUri="https://github.com/bezo97/IFSRenderer/graphs/contributors?all=1" Padding="0" Margin="0" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        
+                        <WrapPanel>
+                            <TextBlock Text="License: " VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="GNU GPLv3" NavigateUri="LICENSE" Padding="0" Margin="0" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        
+                        <WrapPanel>
+                            <TextBlock Text="Source code: " VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="https://github.com/bezo97/IFSRenderer/" NavigateUri="https://github.com/bezo97/IFSRenderer/" Padding="0" Margin="0" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        
+                        <WrapPanel>
+                            <TextBlock Text="Project page: " VerticalAlignment="Center"/>
+                            <HyperlinkButton Content="https://ifsrenderer.z97.io" NavigateUri="https://ifsrenderer.z97.io" Padding="0" Margin="0" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    
+                    <Separator/>
+                    
+                    <TextBlock Text="Linked libraries" FontWeight="Bold"/>
+                    
+                    <WrapPanel>
+                        <HyperlinkButton Content="Avalonia" NavigateUri="https://github.com/AvaloniaUI/Avalonia" Padding="0" Margin="0,0,4,0"/>
+                        <TextBlock Text=", " VerticalAlignment="Center"/>
+                        <HyperlinkButton Content="AsyncEx" NavigateUri="https://github.com/StephenCleary/AsyncEx" Padding="0" Margin="0,0,4,0"/>
+                        <TextBlock Text=", " VerticalAlignment="Center"/>
+                        <HyperlinkButton Content="Json.NET" NavigateUri="https://github.com/JamesNK/Newtonsoft.Json" Padding="0" Margin="0,0,4,0"/>
+                        <TextBlock Text=", " VerticalAlignment="Center"/>
+                        <HyperlinkButton Content="OpenToolkit" NavigateUri="https://github.com/opentk/opentk" Padding="0" Margin="0,0,4,0"/>
+                        <TextBlock Text=", " VerticalAlignment="Center"/>
+                        <HyperlinkButton Content="CommunityToolkit.Mvvm" NavigateUri="https://github.com/CommunityToolkit/dotnet" Padding="0" Margin="0"/>
+                    </WrapPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        
+        <Button IsDefault="True" Command="{Binding OkCommand}"
+                Grid.Row="1" Margin="15" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            OK
+        </Button>
+    </Grid>
+</Window>

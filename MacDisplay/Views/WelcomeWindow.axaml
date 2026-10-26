@@ -1,0 +1,144 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        WindowStartupLocation="CenterOwner" 
+        ShowInTaskbar="False"
+        WindowDecorations="Full"
+        mc:Ignorable="d"
+        Title="Welcome" 
+        Height="650" Width="600"
+        MinHeight="650" MinWidth="600"
+        x:Name="welcomeWindow"
+        x:Class="MacDisplay.Views.WelcomeWindow"
+        x:DataType="vm:WelcomeViewModel"
+        Background="#121212"
+        Foreground="White">
+        
+    <Window.Resources>
+        <DataTemplate x:Key="thumbnailTemplate" x:CompileBindings="False">
+            <Button Width="100" Height="100" Margin="4"
+                    Command="{Binding #welcomeWindow.DataContext.SelectExploreWorkflowCommand}"
+                    CommandParameter="{Binding Key}"
+                    ToolTip.Tip="{Binding Key.Title}" BorderThickness="0">
+                <Button.Background>
+                    <ImageBrush Source="{Binding Value}" 
+                                Stretch="UniformToFill">
+                        <ImageBrush.Transform>
+                            <ScaleTransform ScaleY="-1"/>
+                        </ImageBrush.Transform>
+                    </ImageBrush>
+                </Button.Background>
+            </Button>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid RowDefinitions="300,*,Auto">
+        <!-- Header Banner -->
+        <Grid Grid.Row="0">
+            <Image Stretch="UniformToFill" Source="avares://IFSRenderer/Resources/featured_artwork.jpg"/>
+            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="8" FontSize="14">
+                <HyperlinkButton NavigateUri="https://art.z97.io/" Foreground="White" Content="Artwork ↗"/>
+            </TextBlock>
+            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="8" FontSize="48" FontWeight="Bold">
+                IFSRenderer
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8">
+                <HyperlinkButton NavigateUri="https://github.com/bezo97/IFSRenderer/releases" Foreground="White" Content="Version ↗"/>
+            </TextBlock>
+        </Grid>
+        
+        <!-- Content Area -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+            <!-- Workflow Sidebar Card -->
+            <Border Grid.Column="0" Background="#1E1E1E" CornerRadius="4" Padding="4" Margin="2,4">
+                <StackPanel MinWidth="200" Spacing="4">
+                    <TextBlock FontWeight="Bold" Margin="4">Choose a workflow</TextBlock>
+                    <StackPanel Margin="8,0" Spacing="4">
+                        <Button Command="{Binding SelectWorkflowCommand}" CommandParameter="{x:Static vm:WelcomeWorkflow.FromScratch}" Classes="HyperlinkButton">
+                            Start from scratch
+                        </Button>
+                        <Button Command="{Binding SelectWorkflowCommand}" CommandParameter="{x:Static vm:WelcomeWorkflow.ShowFileDialog}" Classes="HyperlinkButton">
+                            Load file...
+                        </Button>
+                        <Button Command="{Binding SelectWorkflowCommand}" CommandParameter="{x:Static vm:WelcomeWorkflow.BrowseRandoms}" Classes="HyperlinkButton">
+                            Browse randoms...
+                        </Button>
+                    </StackPanel>
+                    
+                    <Grid Width="100" Height="100" Margin="16" HorizontalAlignment="Center">
+                        <Button Width="100" Height="100"
+                                Command="{Binding SelectExploreWorkflowCommand}"
+                                BorderThickness="1">
+                            <Button.Background>
+                                <ImageBrush Source="{Binding ExploreThumbnail}" 
+                                            Stretch="UniformToFill">
+                                    <ImageBrush.Transform>
+                                        <ScaleTransform ScaleY="-1"/>
+                                    </ImageBrush.Transform>
+                                </ImageBrush>
+                            </Button.Background>
+                        </Button>
+                        <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" IsHitTestVisible="False" FontSize="14" Margin="2">
+                            ▷ Explore this
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
+            <!-- Expanders Panel -->
+            <StackPanel Grid.Column="1" Margin="2,4" Spacing="4">
+                <Expander Header="Getting Started">
+                    <Border Background="#1E1E1E" Padding="8" CornerRadius="4">
+                        <StackPanel Spacing="4">
+                            <HyperlinkButton NavigateUri="https://github.com/bezo97/IFSRenderer/wiki/Getting-Started-Guide" Content="Getting Started Guide ↗"/>
+                            <HyperlinkButton NavigateUri="https://github.com/bezo97/IFSRenderer/wiki" Content="Wiki ↗"/>
+                            <Button Command="{Binding SelectWorkflowCommand}" CommandParameter="{x:Static vm:WelcomeWorkflow.VisitSettings}" Classes="HyperlinkButton">
+                                Visit Settings ⚙️
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Expander>
+                
+                <Expander Header="Templates">
+                    <Border Background="#1E1E1E" Padding="8" CornerRadius="4">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding Templates}" ItemTemplate="{StaticResource thumbnailTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+                
+                <Expander Header="Recent Files">
+                    <Border Background="#1E1E1E" Padding="8" CornerRadius="4">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding RecentFiles}" ItemTemplate="{StaticResource thumbnailTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Footer Controls -->
+        <Grid Grid.Row="2" Margin="4" ColumnDefinitions="*,Auto">
+            <Button Grid.Column="0" Command="{Binding ContinueCommand}" IsDefault="True" HorizontalAlignment="Center" Margin="4">Continue</Button>
+            <CheckBox Grid.Column="1" Command="{Binding DisableStartupCommand}"
+                      IsChecked="True" VerticalAlignment="Center" HorizontalAlignment="Right">
+                Show on startup
+            </CheckBox>
+        </Grid>
+    </Grid>
+</Window>

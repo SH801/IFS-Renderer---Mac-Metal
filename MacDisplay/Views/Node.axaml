@@ -1,0 +1,140 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:helper="clr-namespace:MacDisplay.Helper"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             x:Class="MacDisplay.Views.Node"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="150"
+             x:Name="root"
+             x:DataType="vm:IteratorViewModel"
+             Width="{Binding NodeSize}" Height="{Binding NodeSize}"
+             Focusable="False">
+             
+    <UserControl.Resources>
+        <helper:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+        <SolidColorBrush x:Key="bgBrush" Color="Gray"/>
+    </UserControl.Resources>
+             
+    <UserControl.Styles>
+        <!-- Ellipse State Styling -->
+        <Style Selector="Ellipse.base">
+            <Setter Property="StrokeThickness" Value="4"/>
+        </Style>
+        <Style Selector="Ellipse.hover">
+            <Setter Property="StrokeThickness" Value="8"/>
+        </Style>
+        <Style Selector="Ellipse.selected">
+            <Setter Property="StrokeThickness" Value="8"/>
+            <Setter Property="Effect">
+                <DropShadowDirectionEffect ShadowDepth="5" Direction="-90" BlurRadius="20"/>
+            </Setter>
+        </Style>
+        
+        <!-- Action Overlay Visibility Styling -->
+        <Style Selector="Grid.actions">
+            <Setter Property="IsVisible" Value="{Binding IsSelected}"/>
+        </Style>
+        <Style Selector="Grid.actions.hover">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+
+        <!-- Mini-circle action buttons styling -->
+        <Style Selector="Grid.actions Button">
+            <Setter Property="Background" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="CornerRadius" Value="15"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Grid.actions Button:pointerover">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.RenderTransform>
+        <TranslateTransform X="{Binding RenderTranslateValue}" Y="{Binding RenderTranslateValue}"/>
+    </UserControl.RenderTransform>
+    
+    <Grid x:Name="grid" Margin="17" ClipToBounds="False">
+        <Ellipse x:Name="ellipseBody"
+                 Stretch="UniformToFill" 
+                 Cursor="Hand"
+                 Stroke="{Binding ColorRGB, Converter={StaticResource ColorToBrushConverter}}"
+                 PointerPressed="ellipseBody_MouseDown" 
+                 Focusable="True" 
+                 GotFocus="UserControl_GotFocus"
+                 Classes="base"
+                 Classes.hover="{Binding $parent[Grid].IsPointerOver}"
+                 Classes.selected="{Binding IsSelected}">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="{Binding OpacityColor}" Offset="0.98"/>
+                    <GradientStop Color="LightGray" Offset="1"/>
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+        
+        <TextBlock IsHitTestVisible="False"
+                   Text="{Binding NodeLabel}" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" 
+                   Cursor="Hand"
+                   Foreground="Black"/>
+                   
+        <Grid Classes="actions" Classes.hover="{Binding $parent[Grid].IsPointerOver}">
+            <Border x:Name="dragHandle" Width="30" Height="30" 
+                    VerticalAlignment="Top" HorizontalAlignment="Center"
+                    Background="#E0E0E0" 
+                    CornerRadius="15"
+                    Cursor="SizeAll"
+                    PointerMoved="dragHandle_MouseMove" 
+                    PointerPressed="Label_MouseDown">
+                <TextBlock Text="══" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                        FontSize="12" Foreground="Black"/>
+            </Border>
+
+            <Button Command="{Binding FlipOpacityCommand}"
+                    Width="30" Height="30" FontSize="14"
+                    VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2"
+                    ToolTip.Tip="Show/Hide (Ctrl+O)"
+                    IsTabStop="False">
+                👁️
+            </Button>
+            
+            <Button Command="{Binding FlipWeightCommand}"
+                    Width="30" Height="30" FontSize="14"
+                    VerticalAlignment="Top" HorizontalAlignment="Right" Margin="2"
+                    ToolTip.Tip="Enable/Disable (Ctrl+W)"
+                    IsTabStop="False">
+                ⚖
+            </Button>
+            
+            <Button Command="{Binding DuplicateCommand}" CommandParameter="{Binding}"
+                    Width="30" Height="30" FontSize="12"
+                    VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="2"
+                    ToolTip.Tip="Duplicate (Ctrl+D)"
+                    IsTabStop="False">
+                🗎🗎
+            </Button>
+            
+            <Button Command="{Binding SplitCommand}" CommandParameter="{Binding}"
+                    Width="30" Height="30" FontSize="10"
+                    VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="2"
+                    ToolTip.Tip="Split (Ctrl+Shift+D)"
+                    IsTabStop="False">
+                🗎|🗎
+            </Button>
+            
+            <Button Command="{Binding ConnectSelfCommand}"
+                    Width="32" Height="32" FontSize="16"
+                    VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,-8"
+                    ToolTip.Tip="Connect self"
+                    IsTabStop="False">
+                Ꝍ
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

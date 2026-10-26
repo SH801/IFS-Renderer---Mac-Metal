@@ -1,0 +1,14 @@
+﻿<Button xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:MacDisplay.ViewModels"
+        mc:Ignorable="d"
+        x:Class="MacDisplay.Views.Animation.DopeButton"
+        x:DataType="vm:KeyframeViewModel"
+        Cursor="SizeWestEast"
+        Width="15" Height="15"
+        Theme="{StaticResource dopeButtonStyle}"
+        RenderTransform="{StaticResource dopeButtonTransform}"
+        ContextMenu="{StaticResource dopeButtonContextMenu}">
+</Button>

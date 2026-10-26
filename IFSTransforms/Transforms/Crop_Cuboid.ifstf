@@ -1,0 +1,36 @@
+@Name: Crop Cuboid
+@Version: 1.1
+@Description: Crop into a cuboid defined by min and max XYZ values, select visibility of inside, faces, edges (by Rychveldir)
+@Tags: crop
+
+@Faces: 0
+@Edges: 0
+@Inside: 1
+@Min: -1 -1 -1
+@Max: 1 1 1
+
+vec3 n = clamp(p, @Min, @Max);
+float ec = 0;
+
+//check if the vector falls on an edge or corner:
+if (n.x == @Max.x) {ec += 1;}
+if (n.x == @Min.x) {ec += 1;}
+if (n.y == @Max.y) {ec += 1;}
+if (n.y == @Min.y) {ec += 1;}
+if (n.z == @Max.z) {ec += 1;}
+if (n.z == @Min.z) {ec += 1;}
+
+//remove corner points
+if (ec > 2)
+	return discarded_point;
+
+float fade_prob = random(next);
+
+if (ec == 0 && fade_prob > @Inside) //fade inside
+	return discarded_point;
+else if (ec == 1 && fade_prob > @Faces) //fade faces
+	return discarded_point;
+else if (ec > 1 && fade_prob > @Edges) //fade edges
+	return discarded_point;
+
+return n;

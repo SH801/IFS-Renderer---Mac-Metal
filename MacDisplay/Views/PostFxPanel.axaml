@@ -1,0 +1,183 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="300"
+             Padding="0"
+             x:Name="postFxPanel"
+             x:Class="MacDisplay.Views.PostFxPanel"
+             x:DataType="vm:PostFxPanelViewModel">
+             
+    <UserControl.Styles>
+        <!-- Style the Expander's content area padding -->
+        <Style Selector="Expander">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="Expander /template/ ContentPresenter">
+            <Setter Property="Padding" Value="0,8,0,16"/>
+        </Style>
+
+        <!-- Empty state visibility for ItemsControl -->
+        <Style Selector="ItemsControl.effectList">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="ItemsControl.effectList[ItemCount=0]">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+
+        <!-- Empty state hint visibility -->
+        <Style Selector="TextBlock.emptyHint">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Header with controls -->
+        <Grid Grid.Row="0" Margin="0,4" ColumnDefinitions="*,Auto">
+            <!-- Add-layer dropdown -->
+            <Grid Grid.Column="0">
+                <ComboBox x:Name="addLayerCombo" 
+                          ItemsSource="{Binding LoadedEffects}"
+                          Cursor="Hand"
+                          SelectionChanged="AddLayerCombo_SelectionChanged"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:CompileBindings="False">
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock IsHitTestVisible="False" Margin="8,0,0,0" VerticalAlignment="Center">+ Add layer</TextBlock>
+            </Grid>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                <Button Command="{Binding ReloadEffectsCommand}"
+                        ToolTip.Tip="Refresh Fx Plugins">🔄</Button>
+                <Button Command="{Binding OpenPostFxDirectoryCommand}"
+                        ToolTip.Tip="Open Fx Plugins folder">📂</Button>
+            </StackPanel>
+        </Grid>
+        
+        <Separator Grid.Row="1" Margin="0,0,0,4"/>
+        
+        <!-- Effects layers list -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <ItemsControl ItemsSource="{Binding PostEffectLayers}" Classes="effectList" x:Name="effectsItemsControl">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:CompileBindings="False">
+                            <Expander x:Name="layerItem" Margin="0,2" HorizontalAlignment="Stretch">
+                                <Expander.Header>
+                                    <Grid MinHeight="32" ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Checkbox -->
+                                    <CheckBox Grid.Column="0"
+                                            IsChecked="{Binding Enabled}"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,8,0"/>
+
+                                    <!-- Layer Name -->
+                                    <TextBlock Grid.Column="1" 
+                                            Text="{Binding Name}" 
+                                            VerticalAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"/>
+
+                                    <!-- Action Buttons & Info Flyout (Forced Visible) -->
+                                    <StackPanel Grid.Column="2" 
+                                                Orientation="Horizontal" 
+                                                Classes="actionButtons"
+                                                Spacing="4" ZIndex="99"
+                                                Background="#222" 
+                                                IsVisible="{Binding #layerItem.IsPointerOver}"
+                                                VerticalAlignment="Center">
+
+                                        <Button x:Name="infoButton" Content="ℹ️">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuItem IsHitTestVisible="False" DataContext="{Binding Instance.Effect}">
+                                                        <MenuItem.Header>
+                                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                                <TextBlock FontSize="18" FontWeight="Bold" Text="{Binding Name}"/>
+                                                                <ItemsControl ItemsSource="{Binding Tags}">
+                                                                    <ItemsControl.ItemsPanel>
+                                                                        <ItemsPanelTemplate>
+                                                                            <StackPanel Orientation="Horizontal" Spacing="2"/>
+                                                                        </ItemsPanelTemplate>
+                                                                    </ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate x:CompileBindings="False">
+                                                                            <Border Background="#333" CornerRadius="4" Padding="6,2">
+                                                                                <TextBlock Text="{Binding}"/>
+                                                                            </Border>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                                <TextBlock FontWeight="Bold">Description</TextBlock>
+                                                                <TextBlock Text="{Binding Description}" 
+                                                                        Margin="4"
+                                                                        TextWrapping="Wrap" 
+                                                                        MaxWidth="300"/>
+                                                                <TextBlock FontWeight="Bold">Include uses</TextBlock>
+                                                                <ItemsControl ItemsSource="{Binding IncludeUses}" Margin="8,0"/>
+                                                            </StackPanel>
+                                                        </MenuItem.Header>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="ℹ️ Information..." DataContext="{Binding Instance.Effect}"/>
+                                                    <MenuItem Header="✏️ Edit source"
+                                                            Command="{Binding EditPluginSourceCommand}"
+                                                            CommandParameter="{Binding Instance.Effect.FilePath}"/>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        
+                                        <!-- Move Up -->
+                                        <Button x:Name="moveupButton" Content="▲" 
+                                                Command="{Binding $parent[UserControl].((vm:PostFxPanelViewModel)DataContext).MoveUpCommand}"
+                                                CommandParameter="{Binding}"/>
+
+                                        <!-- Move Down -->
+                                        <Button Content="▼" 
+                                                Command="{Binding $parent[UserControl].((vm:PostFxPanelViewModel)DataContext).MoveDownCommand}"
+                                                CommandParameter="{Binding}"/>
+
+                                        <!-- Remove Layer -->
+                                        <Button Content="✕"
+                                                Command="{Binding $parent[UserControl].((vm:PostFxPanelViewModel)DataContext).RemoveLayerCommand}"
+                                                CommandParameter="{Binding}"
+                                                Foreground="Red"
+                                                ToolTip.Tip="Remove layer"/>
+                                    </StackPanel>
+                                </Grid>
+                                </Expander.Header>
+                                <!-- Parameters -->
+                                <Border Padding="0" Margin="0">
+                                    <StackPanel>
+                                        <ItemsControl ItemsSource="{Binding Parameters}">
+                                            <ItemsControl.DataTemplates>
+                                                <DataTemplate DataType="{x:Type vm:RealParamViewModel}" x:CompileBindings="False">
+                                                    <local:ValueSlider Value="{Binding RealParamValue}" SliderSettings="{Binding RealParamSlider}"/>
+                                                </DataTemplate>
+                                                <!-- Vec3 param -->
+                                                <DataTemplate DataType="{x:Type vm:Vec3ParamViewModel}">
+                                                    <local:Vec3Control XValue="{Binding XValue}" YValue="{Binding YValue}" ZValue="{Binding ZValue}" Vec3Settings="{Binding}"/>
+                                                </DataTemplate>
+                                            </ItemsControl.DataTemplates>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Empty state hint -->
+                <TextBlock Text="No post effects added."
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Classes="emptyHint"/>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

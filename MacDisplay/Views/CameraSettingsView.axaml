@@ -1,0 +1,49 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             xmlns:vm="clr-namespace:MacDisplay.ViewModels"
+             xmlns:enum="clr-namespace:IFSEngine.Model;assembly=IFSEngine"
+             x:Class="MacDisplay.Views.CameraSettingsView" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="200"
+             x:Name="cameraSettingsView"
+             Padding="0"
+             x:DataType="vm:CameraSettingsViewModel">
+    <StackPanel Spacing="1">
+        <Grid>
+            <Button
+                Command="{Binding ResetCameraCommand}"
+                ToolTip.Tip="Reset Camera"
+                Height="20" FontSize="10" Padding="4" 
+                VerticalAlignment="Top" HorizontalAlignment="Right">
+                ↩️ Reset
+            </Button>
+            <local:ValueSlider Value="{Binding Camera.FieldOfView}" SliderSettings="{Binding FieldOfViewSlider}" Margin="0 32 0 0"/>
+        </Grid>
+        
+        <local:ValueSlider Value="{Binding Camera.Aperture}" SliderSettings="{Binding ApertureSlider}" HorizontalAlignment="Stretch"/>
+        <local:ValueSlider Value="{Binding Camera.FocusDistance}" SliderSettings="{Binding FocusDistanceSlider}"/>
+        
+        <!--TODO: Ability to lock focus on current focus point-->
+        <CheckBox IsEnabled="False" ToolTip.Tip="🛠️ Under Construction" Foreground="White">🔒 Lock focus point</CheckBox>
+        
+        <local:ValueSlider Value="{Binding Camera.DepthOfField}" SliderSettings="{Binding DepthOfFieldSlider}"/>
+        
+        <TextBlock Text="🧊 Projection" Margin="0 8 0 0" FontWeight="Bold"/>
+        <ComboBox Margin="0,8,0,8"
+                  ItemsSource="{Binding ProjectionTypes}"
+                  SelectedItem="{Binding ProjectionType}" HorizontalAlignment="Stretch"/>
+                  
+        <StackPanel HorizontalAlignment="Stretch">
+            <StackPanel.IsVisible>
+                <Binding Path="ProjectionType"/>
+            </StackPanel.IsVisible>
+            <TextBlock Text="⊙ Projection tilt" ToolTip.Tip="Tilting is useful if you are using a planetarium setup where the dome projector is offset from the center."/>
+            <local:ValueSlider Value="{Binding XTilt}" SliderSettings="{Binding XTiltSlider}"/>
+            <local:ValueSlider Value="{Binding YTilt}" SliderSettings="{Binding YTiltSlider}"/>
+            <local:ValueSlider Value="{Binding ZTilt}" SliderSettings="{Binding ZTiltSlider}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

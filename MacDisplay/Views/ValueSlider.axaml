@@ -1,0 +1,161 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+             xmlns:local="clr-namespace:MacDisplay.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="150"
+             x:Name="valueSlider"
+             x:Class="MacDisplay.Views.ValueSlider">
+             
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Reset" Icon="🔄" Command="{Binding $parent[local:ValueSlider].ResetValueCommand}"/>
+            <MenuItem Header="Animate" Icon="🎬" Command="{Binding $parent[local:ValueSlider].InternalAnimateCommand}"/>
+            <Separator/>
+            <MenuItem IsVisible="{Binding $parent[local:ValueSlider].(ToolTip.Tip), Converter={x:Static ObjectConverters.IsNotNull}}"
+                      IsHitTestVisible="False">
+                <MenuItem.Header>
+                    <StackPanel Spacing="4">
+                        <TextBlock Margin="-10,0" Text="{Binding $parent[local:ValueSlider].Label}"/>
+                        <TextBlock MaxWidth="300" Text="{Binding $parent[local:ValueSlider].(ToolTip.Tip)}"
+                                   FontFamily="Times New Roman"
+                                   TextWrapping="Wrap" TextAlignment="Justify" Margin="8"/>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+            <MenuItem IsVisible="{Binding $parent[local:ValueSlider].AnimationPath, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <MenuItem.Header>
+                    <TextBox Text="{Binding $parent[local:ValueSlider].AnimationPath}"
+                             IsReadOnly="True" FontFamily="Consolas"
+                             PlaceholderText="Channel path"/>
+                </MenuItem.Header>
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
+    
+    <!-- Define your height variable here -->
+    <UserControl.Resources>
+        <sys:Double x:Key="RowHeight">35</sys:Double>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Force a uniform height and vertical alignment across all buttons in this control -->
+        <Style Selector="Button">
+            <Setter Property="Height" Value="{StaticResource RowHeight}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Force a uniform height and vertical alignment across the text box and text block -->
+        <Style Selector="TextBlock#displayLabel">
+            <Setter Property="Height" Value="{StaticResource RowHeight}"/>
+            <Setter Property="LineHeight" Value="{StaticResource RowHeight}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBox#valueEditor">
+            <Setter Property="Height" Value="{StaticResource RowHeight}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Spacing="2">
+        <Grid IsVisible="{Binding $parent[local:ValueSlider].IsLabelShown}">
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding $parent[local:ValueSlider].Label}"/>
+            <Button x:Name="symbolButton1" HorizontalAlignment="Right"
+                    Width="26" Height="26"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Padding="0"
+                    IsTabStop="False" ToolTip.Tip="Animation keyframe"
+                    IsVisible="{Binding $parent[local:ValueSlider].AnimationPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    Command="{Binding $parent[local:ValueSlider].InternalAnimateCommand}"
+                    Background="Transparent"
+                    BorderBrush="Transparent">
+
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+        </Grid>
+
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
+            <Button Grid.Column="0" 
+                    Padding="10,0,10,0" IsTabStop="False"
+                    Background="#303030"
+                    Click="Down_Click">-</Button>
+                    
+            <TextBlock x:Name="displayLabel" Grid.Column="1"
+                       Text="{Binding $parent[local:ValueSlider].Value, StringFormat={}{0:0.####}}"
+                       IsVisible="{Binding $parent[local:ValueSlider].Editing, Converter={StaticResource InverseBoolConverter}}"
+                       Background="#303030" Cursor="SizeWestEast"
+                       IsTabStop="True" Focusable="True" GotFocus="valueSlider_GotKeyboardFocus"
+                       TextAlignment="Center" VerticalAlignment="Center" 
+                       PointerMoved="DisplayLabel_MouseMove" PointerReleased="DisplayLabel_MouseUp"/>
+                       
+            <TextBox x:Name="valueEditor" Grid.Column="1" 
+                     Text="{Binding $parent[local:ValueSlider].Value, StringFormat={}{0:0.####}}"
+                     IsVisible="{Binding $parent[local:ValueSlider].Editing}"
+                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                     DoubleTapped="ValueEditor_MouseDoubleClick"
+                     KeyDown="ValueEditor_KeyDown" LostFocus="ValueEditor_LostFocus"/>
+                     
+            <Button Grid.Column="2" 
+                    Padding="10,0,10,0" IsTabStop="False"
+                    Background="#303030"
+                    Click="Up_Click">+</Button>
+                    
+            <Grid Grid.Column="3" IsVisible="{Binding $parent[local:ValueSlider].IsLabelShown, Converter={StaticResource InverseBoolConverter}}">
+                <!-- Upgraded to a ToggleButton with proper command & state behavior -->
+                <ToggleButton x:Name="symbolButton2"
+                              IsTabStop="False" Padding="0" ToolTip.Tip="Animation keyframe"
+                              IsVisible="{Binding $parent[local:ValueSlider].AnimationPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                              Width="26" Height="26"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              Background="Transparent"
+                              BorderBrush="Transparent" 
+                              Command="{Binding $parent[local:ValueSlider].InternalAnimateCommand}">
+
+                    <ToggleButton.Styles>
+                        <!-- Normal Pointer Over -->
+                        <Style Selector="ToggleButton:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#2a2a2a"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                        <!-- Normal Pressed -->
+                        <Style Selector="ToggleButton:pressed /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#333333"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                        
+                        <!-- Checked (removes the default blue accent) -->
+                        <Style Selector="ToggleButton:checked /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                        <!-- Checked + Pointer Over -->
+                        <Style Selector="ToggleButton:checked:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#2a2a2a"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                        <!-- Checked + Pressed -->
+                        <Style Selector="ToggleButton:checked:pressed /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#333333"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                    </ToggleButton.Styles>
+                </ToggleButton>
+            </Grid>
+        </Grid>
+    </StackPanel>
+</UserControl>

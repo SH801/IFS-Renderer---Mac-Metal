@@ -1,0 +1,142 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MacDisplay.Views"
+        xmlns:vm="clr-namespace:MacDisplay.ViewModels" 
+        x:Class="MacDisplay.Views.GeneratorWindow"
+        mc:Ignorable="d"
+        Title="Generator" Height="720" Width="1280" WindowState="Maximized"
+        x:Name="generatorWindow"
+        x:DataType="vm:GeneratorViewModel">
+    
+    <Window.Styles>
+        <Style Selector="CheckBox">
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+M" Command="{Binding PinCommand}"/>
+    </Window.KeyBindings>
+
+    <Grid RowDefinitions="Auto,*">
+        <Menu Grid.Row="0">
+            <MenuItem Header="📌 Pin Main" 
+                      Command="{Binding PinCommand}"
+                      ToolTip.Tip="Pin the fractal that is loaded in the main window. (Ctrl+M)"/>
+        </Menu>
+        
+        <Grid Grid.Row="1" ColumnDefinitions="250,*">
+            <!-- Pinned Fractals Sidebar -->
+            <Border Grid.Column="0" Margin="8" Padding="8" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" Text="📌 Pinned fractals" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding PinnedIFSThumbnails}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:CompileBindings="False">
+                                    <Grid Width="200" Height="200">
+                                        <Button Width="200" Height="200" Margin="4"
+                                                Command="{Binding DataContext.SendToMainCommand, ElementName=generatorWindow}"
+                                                CommandParameter="{Binding Key}"
+                                                BorderThickness="0">
+                                            <Button.Background>
+                                                <ImageBrush Source="{Binding Value}" Stretch="UniformToFill">
+                                                    <ImageBrush.Transform>
+                                                        <ScaleTransform ScaleY="-1"/>
+                                                    </ImageBrush.Transform>
+                                                </ImageBrush>
+                                            </Button.Background>
+                                        </Button>
+                                        <Button Command="{Binding DataContext.UnpinCommand, ElementName=generatorWindow}"
+                                                CommandParameter="{Binding Key}"
+                                                Width="20" Height="20" FontSize="10" Margin="8"
+                                                HorizontalAlignment="Left" VerticalAlignment="Bottom">🗑</Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Mutation & Generated Content Panel -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                <Border Grid.Row="0" Margin="8" Padding="8" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="🔮 Mutation options" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Margin="8">
+                                <CheckBox IsChecked="{Binding Options.MutateIterators}">Iterators</CheckBox>
+                                <CheckBox IsChecked="{Binding Options.MutateConnections}">Connections</CheckBox>
+                                <CheckBox IsChecked="{Binding Options.MutateConnectionWeights}">Weights</CheckBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="8">
+                                <CheckBox IsChecked="{Binding Options.MutatePalette}">Palette</CheckBox>
+                                <CheckBox IsChecked="{Binding Options.MutateColoring}">Coloring</CheckBox>
+                                <TextBlock Text="Dominant Color" FontWeight="SemiBold" Margin="4"/>
+                                <CheckBox IsChecked="{Binding Options.UseMixboxMixing}" 
+                                          ToolTip.Tip="Use Mixbox algorithm to mix colors similar to mixing paint.">
+                                    Pigment-based mixing
+                                </CheckBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="8">
+                                <CheckBox IsEnabled="False">Transforms</CheckBox>
+                                <ListBox IsEnabled="False" Height="40"><ListBoxItem>Transforms</ListBoxItem></ListBox>
+                                <CheckBox IsChecked="{Binding Options.MutateParameters}">Parameters</CheckBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4" Margin="8">
+                                <local:ValueSlider Value="{Binding Options.MutationChance}" SliderSettings="{Binding MutationChanceSlider}"/>
+                                <local:ValueSlider Value="{Binding Options.MutationStrength}" SliderSettings="{Binding MutationStrengthSlider}"/>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <Grid HorizontalAlignment="Center" ColumnDefinitions="Auto,Auto" Margin="0,8,0,0">
+                            <local:ValueSlider Grid.Column="0" Margin="8,0" Width="110" Value="{Binding Options.BatchSize}" SliderSettings="{Binding BatchSizeSlider}"/>
+                            <Button VerticalAlignment="Bottom" Margin="8,0" Padding="30,8" Grid.Column="1" Command="{Binding GenerateRandomBatchCommand}">
+                                <TextBlock Text="🎲 New batch"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Generated Fractals Grid -->
+                <Border Grid.Row="1" Margin="8" Padding="8" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Text="🎰 Generated fractals" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding GeneratedIFSThumbnails}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:CompileBindings="False">
+                                        <Button Width="200" Height="200" Margin="4"
+                                                Command="{Binding DataContext.PinCommand, ElementName=generatorWindow}"
+                                                CommandParameter="{Binding Key}" BorderThickness="0">
+                                            <Button.Background>
+                                                <ImageBrush Source="{Binding Value}" Stretch="UniformToFill">
+                                                    <ImageBrush.Transform>
+                                                        <ScaleTransform ScaleY="-1"/>
+                                                    </ImageBrush.Transform>
+                                                </ImageBrush>
+                                            </Button.Background>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

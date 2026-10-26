@@ -1,0 +1,10 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:MacDisplay.Views.Animation"
+             mc:Ignorable="d"
+             d:DesignHeight="256" d:DesignWidth="800"
+             x:Class="MacDisplay.Views.Animation.Spectrogram">
+    <Image Name="spectrogramImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Fill"/>
+</UserControl>

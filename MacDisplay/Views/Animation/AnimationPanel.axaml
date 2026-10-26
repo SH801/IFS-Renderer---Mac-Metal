@@ -1,0 +1,247 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="using:System"
+             xmlns:local="using:MacDisplay.Views.Animation"
+             xmlns:common="using:MacDisplay.Views"
+             xmlns:viewModels="clr-namespace:MacDisplay.ViewModels"
+             xmlns:conv="using:MacDisplay.Converters"
+             xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+             mc:Ignorable="d" x:Class="MacDisplay.Views.Animation.AnimationPanel"
+             x:Name="animationPanel"
+             x:DataType="viewModels:AnimationViewModel"
+             d:DesignHeight="300" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <!-- Custom position to point converter instantiated here -->
+        <local:PositionToPointConverter x:Key="positionToPointConverter" />
+
+        <DrawingBrush x:Key="linesBrush" TileMode="Tile"
+                      DestinationRect="0,0,50,1" SourceRect="0,0,50,1">
+            <DrawingBrush.Drawing>
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="DarkGray" Thickness="2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <LineGeometry StartPoint="0,0" EndPoint="0,1"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.timelineButtonStyle">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="Height" Value="15"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="8"/>
+        </Style>
+        <Style Selector="Grid:pointerover > Button.timelineButtonStyle">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="ItemsControl.alternatingItems > ContentPresenter:nth-child(even)">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ItemsControl.alternatingItems > ContentPresenter:nth-child(odd)">
+            <Setter Property="Background" Value="#333333"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="200,2,*" RowDefinitions="60,30,*">
+        <!-- Top Left Controls -->
+        <Grid Grid.Column="0" Grid.Row="0" Margin="4">
+            <Button Command="{Binding JumpToStartCommand}" ToolTip.Tip="Stop animation"
+                    IsEnabled="{Binding IsExportingFrames, Converter={x:Static BoolConverters.Not}}"
+                    HorizontalAlignment="Left">
+                ⬜
+            </Button>
+            <ToggleButton Command="{Binding PlayPauseCommand}" ToolTip.Tip="Play/Pause animation preview"
+                          IsEnabled="{Binding IsExportingFrames, Converter={x:Static BoolConverters.Not}}"
+                          HorizontalAlignment="Center">
+                <Panel>
+                    <Label FontFamily="Monospace" Padding="2,2,0,0" Foreground="Black">▷/❚❚</Label>
+                </Panel>
+            </ToggleButton>
+        </Grid>
+
+        <!-- Audio Clip Loader -->
+        <Grid Grid.Column="0" Grid.Row="1" Margin="4,0" Height="30" VerticalAlignment="Center">
+            <Button Command="{Binding LoadAudioCommand}" HorizontalAlignment="Left" Padding="5" ToolTip.Tip="{Binding AudioClipTitle, TargetNullValue=Load audio clip}">
+                <TextBlock TextTrimming="CharacterEllipsis">
+                    🎵 <Run Text="{Binding AudioClipTitle, TargetNullValue=...}"/>
+                </TextBlock>
+            </Button>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Background="Black"/>
+
+        <!-- Sliders Header -->
+        <Grid Grid.Column="2" Grid.Row="0">
+            <common:ValueSlider Value="{Binding ClipFps}" SliderSettings="{Binding FpsSlider}" HorizontalAlignment="Left" MinWidth="100"/>
+            <common:ValueSlider Value="{Binding CurrentTimeSeconds}" SliderSettings="{Binding CurrentTimeSlider}"
+                                MaxValue="{Binding ClipLength}"
+                                Increment="{Binding CurrentTimeIncrement}"
+                                HorizontalAlignment="Center" MinWidth="125"/>
+            <common:ValueSlider Value="{Binding ClipLength}" SliderSettings="{Binding LengthSlider}" HorizontalAlignment="Right" MinWidth="100"/>
+        </Grid>
+
+        <!-- Channel Headers ScrollViewer -->
+        <ScrollViewer x:Name="channelHeaderScroller" Grid.Column="0" Grid.Row="2" 
+                      VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Channels}" Classes="alternatingItems" Grid.Column="0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:CompileBindings="False">
+                            <Grid x:Name="alternatingBackgroundGrid1" ColumnDefinitions="*,Auto" Height="35">
+                                <Button Grid.Column="0" 
+                                        Command="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).EditChannelCommand}" 
+                                        CommandParameter="{Binding}" 
+                                        Background="Transparent" BorderThickness="0" Foreground="White">
+                                    <TextBlock Text="{Binding Name, Mode=OneWay}" />
+                                </Button>
+                                <Button Grid.Column="1" Classes="timelineButtonStyle"
+                                        Command="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).RemoveChannelCommand}" 
+                                        CommandParameter="{Binding}">
+                                    ❌
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Command="{Binding ImportChannelsCommand}"
+                        ToolTip.Tip="Import channels from a CSV file where columns are the channel IDs and rows are the frames. Make sure to adjust the Framerate slider to match the CSV data."
+                        HorizontalAlignment="Center" Margin="8">+ Import...</Button>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Timeline / Dopesheet ScrollViewer -->
+        <ScrollViewer Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
+            <!-- Root Grid to stack the DockPanel content and the playhead overlay lines together -->
+            <Grid Width="{Binding SheetWidth}" HorizontalAlignment="Left">
+                
+                <!-- Main Timeline Content -->
+                <DockPanel LastChildFill="True">
+                    <!-- Time Scrubber Header (Docked to Top, Height 30) -->
+                    <Border DockPanel.Dock="Top" Height="30" MinHeight="30" MaxHeight="30" BorderThickness="0,0,0,1" BorderBrush="#222222">
+                        <Grid Background="#333333" Cursor="SizeWestEast"
+                            PointerMoved="TimeScrubber_PointerMoved"
+                            PointerWheelChanged="TimeScrubber_PointerWheelChanged">
+                            
+                            <Grid IsHitTestVisible="False">
+                                <Grid Background="#111111"/>
+                                <Grid x:Name="scrubberAudioBarsContainer" ClipToBounds="True">
+                                    <Grid.Background>
+                                        <ImageBrush Stretch="None" AlignmentX="Left" AlignmentY="Top"/>
+                                    </Grid.Background>
+                                </Grid>
+                                <Grid x:Name="scrubberTicksGrid" Background="{StaticResource linesBrush}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Dopesheet Sheet -->
+                    <ScrollViewer x:Name="sheetScroller" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
+                        <ItemsControl ItemsSource="{Binding Channels}" Classes="alternatingItems">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Background="Transparent"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:CompileBindings="False">
+                                    <Grid x:Name="alternatingBackgroundGrid2" Height="35" 
+                                        PointerPressed="ChannelGrid_PointerPressed"
+                                        Width="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).SheetWidth}">
+                                        <Grid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="_Insert keyframe here" Command="{Binding InsertKeyframeCommand}"/>
+                                                <MenuItem Header="_Remove channel" Command="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).RemoveChannelCommand}" CommandParameter="{Binding}" Foreground="OrangeRed"/>
+                                            </ContextMenu>
+                                        </Grid.ContextMenu>
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="#222222">
+                                            <!-- Grid container allows multiple children inside the Border -->
+                                            <Grid Background="#111111">
+                                                <!-- Background Ticks matching the scrubber header -->
+                                                <Grid Background="{StaticResource linesBrush}" IsHitTestVisible="False"/>
+
+                                                <!-- Keyframes Canvas layered on top -->
+                                                <ItemsControl ItemsSource="{Binding Keyframes}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <Canvas Height="35" ClipToBounds="False"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.Styles>
+                                                        <Style Selector="ContentPresenter">
+                                                            <Setter Property="Canvas.Left" Value="{Binding TimelinePositon}"/>
+                                                            <Setter Property="Canvas.Top" Value="5"/>
+                                                        </Style>
+                                                    </ItemsControl.Styles>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:CompileBindings="False">
+                                                            <!-- Obvious debugging keyframe view -->
+                                                            <Border Width="16" Height="24" CornerRadius="3">
+                                                            <local:DopeButton Width="12" Height="14"
+                                                                Margin="-15,0,0,0"
+                                                                Command="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).JumpToKeyframeCommand}" 
+                                                                CommandParameter="{Binding}">◈</local:DopeButton>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <!-- Playhead Indicator Lines (Overlaid on top, completely non-interactive) -->
+                <Canvas IsHitTestVisible="False" ClipToBounds="False">
+                    <Line StartPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=0}"
+                        EndPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=1000}"
+                        Stroke="#88000000" StrokeThickness="3"/>
+                    <Line StartPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=0}"
+                        EndPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=1000}"
+                        Stroke="White" StrokeThickness="1"/>
+                    <Line StartPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=0}"
+                        EndPoint="{Binding CurrentTimeScrollPosition, Converter={StaticResource positionToPointConverter}, ConverterParameter=10}"
+                        Stroke="White" StrokeThickness="5"/>
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Guide Text & Export Progress Overlay -->
+        <Grid Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label IsVisible="{Binding !Channels.Count}"
+                   Foreground="#aaaaaa" FontSize="16">
+                🛈 Insert a keyframe by clicking ◇ next to the value!
+            </Label>
+            <StackPanel IsVisible="{Binding IsExportingFrames}">
+                <ProgressBar IsIndeterminate="True" Foreground="Red" Width="50" Height="20"/>
+                <TextBlock TextAlignment="Center" Foreground="#aaaaaa" FontSize="16" Margin="0,0,0,16">
+                    Exporting animation frames...
+                </TextBlock>
+                <Button Command="{Binding StopExportingFramesCommand}" HorizontalAlignment="Center">
+                    Cancel
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Embedded Channel Editor Panel -->
+        <Grid Grid.Column="0" Grid.Row="2" 
+              IsVisible="{Binding EditedChannel, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
+              Background="#333333">
+            <local:ChannelEditor DataContext="{Binding EditedChannel}" Padding="4"/>
+        </Grid>
+    </Grid>
+</UserControl>

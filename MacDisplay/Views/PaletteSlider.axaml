@@ -1,0 +1,68 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:MacDisplay.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Name="PaletteSlider1"
+             x:Class="MacDisplay.Views.PaletteSlider">
+
+    <Grid>
+        <!-- 1. The gradient background layer -->
+        <Border BorderThickness="2" BorderBrush="Black" Margin="4" Height="24">
+            <Panel x:Name="gradientPanel" />
+        </Border>
+        
+        <!-- 2. Slider with a clean template that strips out all default theme lines and button graphics -->
+        <Slider x:Name="slider"
+                Value="{Binding ColorIndex, RelativeSource={RelativeSource AncestorType=local:PaletteSlider}, Mode=TwoWay}"
+                Minimum="0" Maximum="1" TickFrequency="0.01" 
+                IsSnapToTickEnabled="False"
+                VerticalAlignment="Center"
+                ValueChanged="Slider_ValueChanged">
+            <Slider.Template>
+                <ControlTemplate TargetType="Slider">
+                    <Grid Background="Transparent">
+                        <Track Name="PART_Track" 
+                               Minimum="{TemplateBinding Minimum}" 
+                               Maximum="{TemplateBinding Maximum}" 
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               Orientation="{TemplateBinding Orientation}">
+                            <Track.DecreaseButton>
+                                <RepeatButton Background="Transparent">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Panel Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseButton>
+                            <Track.IncreaseButton>
+                                <RepeatButton Background="Transparent">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Panel Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseButton>
+                            <Track.Thumb>
+                                <Thumb Name="PART_Thumb">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Width="22" Height="34"
+                                                    Background="{Binding ThumbBrush, RelativeSource={RelativeSource AncestorType=local:PaletteSlider}}"
+                                                    BorderBrush="White"
+                                                    BorderThickness="2"
+                                                    CornerRadius="0"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Slider.Template>
+        </Slider>
+    </Grid>
+</UserControl>

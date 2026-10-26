@@ -1,0 +1,140 @@
+﻿#nullable enable
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+
+using IFSEngine.Generation;
+using IFSEngine.Model;
+using IFSEngine.Rendering;
+using IFSEngine.Utility;
+
+using OpenTK.Windowing.Desktop;
+
+namespace MacDisplay.Models;
+
+/// <summary>
+/// The generator workspace model that contains a utility <see cref="RendererGL"/> 
+/// and lists of <see cref="IFS"/> that it is rendering.
+/// </summary>
+public partial class GeneratorWorkspace : ObservableObject
+{
+    public IReadOnlyList<IFS> PinnedIFS => _pinnedIFS;
+    public IReadOnlyList<IFS> GeneratedIFS => _generatedIFS;
+    public IReadOnlyDictionary<IFS, IImage> Thumbnails => _thumbnails;
+
+    private readonly IGLFWGraphicsContext _context;
+    private readonly RendererGL _renderer;
+    private readonly Generator _generator;
+    private readonly ConcurrentQueue<IFS> _renderQueue = new();
+    private readonly ConcurrentDictionary<IFS, IImage> _thumbnails = new();
+    private readonly List<IFS> _pinnedIFS = [];
+    private readonly List<IFS> _generatedIFS = [];
+
+    /// <summary>
+    /// Call <see cref="Initialize"/> before using
+    /// </summary>
+    /// <param name="includeSources"></param>
+    /// <param name="loadedTransforms"></param>
+    public GeneratorWorkspace(IReadOnlyCollection<string> includeSources, IReadOnlyCollection<TransformPlugin> loadedTransforms)
+    {
+        _includeSources = includeSources;
+
+        //init thumbnail renderer
+        GameWindow hw = new(new GameWindowSettings(), new NativeWindowSettings
+        {
+            Flags = OpenTK.Windowing.Common.ContextFlags.Offscreen,
+            IsEventDriven = true,
+            StartFocused = false,
+            StartVisible = false,
+            WindowState = OpenTK.Windowing.Common.WindowState.Minimized
+        });
+        _context = hw.Context;
+
+        _renderer = new RendererGL(_context);
+        _renderer.SetDisplayResolution(200, 200);
+        _generator = new Generator(loadedTransforms);
+    }
+
+    public async Task Initialize()
+    {
+        await _renderer.Initialize(_includeSources, _generator.SelectedTransforms, []);
+        //performance settings
+        await _renderer.SetWorkgroupCount(100);
+        _context.MakeNoneCurrent();
+    }
+
+    public void GenerateNewRandomBatch(GeneratorOptions options)
+    {
+        options.BaseParams = _pinnedIFS.LastOrDefault() ?? GeneratorOptions.DefaultStartingIfs;//TODO: use selection of pinned fractals
+        _generatedIFS.Clear();
+
+        foreach (var r in _generator.GenerateBatch(options))
+        {
+            _generatedIFS.Add(r);
+            _renderQueue.Enqueue(r);
+        }
+    }
+
+    public void PinIFS(IFS ifs)
+    {
+        _pinnedIFS.Add(ifs);
+        if (!_thumbnails.ContainsKey(ifs))
+            _renderQueue.Enqueue(ifs);
+    }
+
+    public void UnpinIFS(IFS ifs) => _pinnedIFS.Remove(ifs);
+
+    private readonly object _queueLocker = new();
+    private readonly IReadOnlyCollection<string> _includeSources;
+
+    public void ProcessQueue()
+    {
+        lock (_queueLocker)
+        {
+            while (_renderQueue.TryDequeue(out var ifs) && ifs is not null)
+            {
+                _context.MakeCurrent();
+                //modify settings to be optimal for thumbnail rendering
+                var previewIfs = ifs.DeepClone();
+                previewIfs.ImageResolution = new System.Drawing.Size(200, 200);
+                previewIfs.Entropy = 1.0 / 100;
+                previewIfs.Warmup = 0;
+                //render image after 1 compute pass
+                _renderer.LoadParams(previewIfs);
+                _renderer.SetHistogramScaleToDisplay();
+                _renderer.DispatchCompute();
+                _renderer.RenderImage();
+
+                //read rendered image data into Avalonia WriteableBitmap
+                var wbm = new WriteableBitmap(
+                    new PixelSize(_renderer.HistogramWidth, _renderer.HistogramHeight),
+                    new Vector(96, 96),
+                    PixelFormat.Bgra8888,
+                    AlphaFormat.Premul);
+
+                _context.MakeNoneCurrent();
+
+                using (var locked = wbm.Lock())
+                {
+                    _renderer.CopyPixelDataToBitmap(locked.Address).Wait();
+                }
+
+                //save thumbnail image
+                _thumbnails[ifs] = wbm;
+            }
+        }
+
+        //cleanup old thumbnails
+        var removedParams = _thumbnails.Keys.Where(k => !(_pinnedIFS.Contains(k) || _generatedIFS.Contains(k))).ToList();
+        foreach (var t in removedParams)
+            _thumbnails.TryRemove(t, out _);
+    }
+}
