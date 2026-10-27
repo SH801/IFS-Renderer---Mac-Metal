@@ -104,7 +104,6 @@ public sealed partial class WelcomeViewModel : ObservableObject
                     .Select(templatePath => IfsNodesSerializer.LoadJsonFileAsync(templatePath, _loadedTransforms, _loadedEffects, true))
                     .ToList();
             }
-
             var recentFilePaths = Settings.Default.RecentFiles.Cast<string>();
             recentFilesTasks = recentFilePaths
                 .Select(recentPath => IfsNodesSerializer.LoadJsonFileAsync(recentPath, _loadedTransforms, _loadedEffects, true))
@@ -145,6 +144,7 @@ public sealed partial class WelcomeViewModel : ObservableObject
         {
             renderer.CopyPixelDataToBitmap(locked.Address).Wait();
         }
+
         return wbm;
     }
 

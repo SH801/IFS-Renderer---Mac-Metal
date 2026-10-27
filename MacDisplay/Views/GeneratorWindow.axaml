@@ -46,13 +46,11 @@
                                                 Command="{Binding DataContext.SendToMainCommand, ElementName=generatorWindow}"
                                                 CommandParameter="{Binding Key}"
                                                 BorderThickness="0">
-                                            <Button.Background>
-                                                <ImageBrush Source="{Binding Value}" Stretch="UniformToFill">
-                                                    <ImageBrush.Transform>
-                                                        <ScaleTransform ScaleY="-1"/>
-                                                    </ImageBrush.Transform>
-                                                </ImageBrush>
-                                            </Button.Background>
+                                            <Grid>
+                                                <Image Source="{Binding Value}" 
+                                                    Stretch="UniformToFill">
+                                                </Image>
+                                            </Grid>
                                         </Button>
                                         <Button Command="{Binding DataContext.UnpinCommand, ElementName=generatorWindow}"
                                                 CommandParameter="{Binding Key}"
@@ -122,13 +120,11 @@
                                         <Button Width="200" Height="200" Margin="4"
                                                 Command="{Binding DataContext.PinCommand, ElementName=generatorWindow}"
                                                 CommandParameter="{Binding Key}" BorderThickness="0">
-                                            <Button.Background>
-                                                <ImageBrush Source="{Binding Value}" Stretch="UniformToFill">
-                                                    <ImageBrush.Transform>
-                                                        <ScaleTransform ScaleY="-1"/>
-                                                    </ImageBrush.Transform>
-                                                </ImageBrush>
-                                            </Button.Background>
+                                            <Grid>
+                                                <Image Source="{Binding Value}" 
+                                                    Stretch="UniformToFill">
+                                                </Image>
+                                            </Grid>
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

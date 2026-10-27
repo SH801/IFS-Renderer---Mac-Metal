@@ -121,7 +121,7 @@
                                                     <Separator/>
                                                     <MenuItem>
                                                         <MenuItem.Header>
-                                                            <HyperlinkButton Content="ℹ️ Information..." NavigateUri="{Binding ReferenceUrl}" ToolTip.Tip="{Binding ReferenceUrl}"/>
+                                                            <HyperlinkButton Content="ⓘ Information..." NavigateUri="{Binding ReferenceUrl}" ToolTip.Tip="{Binding ReferenceUrl}"/>
                                                         </MenuItem.Header>
                                                     </MenuItem>
                                                     <MenuItem

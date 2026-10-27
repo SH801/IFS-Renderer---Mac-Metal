@@ -92,7 +92,7 @@
                                                 IsVisible="{Binding #layerItem.IsPointerOver}"
                                                 VerticalAlignment="Center">
 
-                                        <Button x:Name="infoButton" Content="ℹ️">
+                                        <Button x:Name="infoButton" Content="ⓘ">
                                             <Button.Flyout>
                                                 <MenuFlyout>
                                                     <MenuItem IsHitTestVisible="False" DataContext="{Binding Instance.Effect}">
@@ -124,7 +124,7 @@
                                                         </MenuItem.Header>
                                                     </MenuItem>
                                                     <Separator/>
-                                                    <MenuItem Header="ℹ️ Information..." DataContext="{Binding Instance.Effect}"/>
+                                                    <MenuItem Header="ⓘ Information..." DataContext="{Binding Instance.Effect}"/>
                                                     <MenuItem Header="✏️ Edit source"
                                                             Command="{Binding EditPluginSourceCommand}"
                                                             CommandParameter="{Binding Instance.Effect.FilePath}"/>

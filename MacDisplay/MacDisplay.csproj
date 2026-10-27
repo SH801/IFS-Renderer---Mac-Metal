@@ -134,6 +134,10 @@
     </Content>
   </ItemGroup>
 
+	<ItemGroup>
+		<SplashScreen Include="Resources/SplashScreen.png" />
+	</ItemGroup>
+
   <!-- Target to explicitly copy it into the macOS app bundle structure post-build -->
   <Target Name="CopyResolutionPresetsToBundle" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <PropertyGroup>
@@ -183,6 +187,23 @@
 
       <Copy SourceFiles="@(PostEffectFiles)"
             DestinationFiles="@(PostEffectFiles->'$(PostEffectsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+            SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyTemplates" AfterTargets="Build">
+      <PropertyGroup>
+          <TemplatesSourceDir>$(MSBuildProjectDirectory)/Library/Templates</TemplatesSourceDir>
+          <TemplatesDestDir>$(TargetDir)IFSRenderer.app/Contents/MonoBundle/Templates</TemplatesDestDir>
+      </PropertyGroup>
+
+      <Message Importance="high" Text="Copying Templates to app bundle: $(TemplatesDestDir)" />
+
+      <ItemGroup>
+          <TemplatesFiles Include="$(TemplatesSourceDir)/**/*" />
+      </ItemGroup>
+
+      <Copy SourceFiles="@(TemplatesFiles)"
+            DestinationFiles="@(TemplatesFiles->'$(TemplatesDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
             SkipUnchangedFiles="true" />
   </Target>
 

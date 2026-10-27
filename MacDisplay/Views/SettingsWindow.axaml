@@ -7,14 +7,21 @@
         WindowStartupLocation="CenterOwner" 
         ShowInTaskbar="False"
         WindowDecorations="Full"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
         Title="⚙️ Settings" x:Name="settingsWindow"
         x:Class="MacDisplay.Views.SettingsWindow"
-        Width="500" Height="500" MinWidth="500" MinHeight="500"
+        Width="600" Height="500" MinWidth="600" MinHeight="500"
         x:DataType="vm:SettingsViewModel">
         
     <Grid Margin="10" RowDefinitions="*,Auto">
-        <TabControl Grid.Row="0">
+        <TabControl Grid.Row="0" TabStripPlacement="Left">
+
+            <TabControl.Styles>
+                <Style Selector="TabItem">
+                    <Setter Property="FontSize" Value="16"/>
+                </Style>
+            </TabControl.Styles>
+
             <!-- User settings tab -->
             <TabItem Header="👤 User settings" MinWidth="150">
                 <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="0.75*,Auto,1*">
@@ -25,40 +32,40 @@
                     <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Author name
                     </TextBlock>
-                    <TextBlock Grid.Row="1" Grid.Column="1"
-                               ToolTip.Tip="Optionally provide your name to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="1" Grid.Column="1"
+                               ToolTip.Tip="Optionally provide your name to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <TextBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                              Text="{Binding AuthorName}" PlaceholderText="Provide an author name"/>
                     <!-- Author link -->
                     <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Author link
                     </TextBlock>
-                    <TextBlock Grid.Row="2" Grid.Column="1" 
-                               ToolTip.Tip="Optionally provide a link to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" 
+                               ToolTip.Tip="Optionally provide a link to be embedded in params and image metadata." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <TextBox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                              Text="{Binding AuthorLink}" PlaceholderText="https://example.com"/>
                     <!-- UseWhiteForBlankParams -->
                     <TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         White blank params
                     </TextBlock>
-                    <TextBlock Grid.Row="3" Grid.Column="1"
-                               ToolTip.Tip="Check this to use a simple white palette instead of random colors When starting from scratch in blank params." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="3" Grid.Column="1"
+                               ToolTip.Tip="Check this to use a simple white palette instead of random colors When starting from scratch in blank params." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <CheckBox Grid.Row="3" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                               IsChecked="{Binding UseWhiteForBlankParams}"/>
                     <!-- IsWelcomeShownOnStartup -->
                     <TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Welcome screen
                     </TextBlock>
-                    <TextBlock Grid.Row="4" Grid.Column="1"
-                               ToolTip.Tip="Option to hide or show the welcome screen when IFSRenderer starts." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="4" Grid.Column="1"
+                               ToolTip.Tip="Option to hide or show the welcome screen when IFSRenderer starts." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <CheckBox Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                               IsChecked="{Binding IsWelcomeShownOnStartup}"/>
                     <!-- Notification -->
                     <TextBlock Grid.Row="5" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="Gray">
                         Notifications
                     </TextBlock>
-                    <TextBlock Grid.Row="5" Grid.Column="1"
-                               ToolTip.Tip="Display a Windows notification when a render finishes. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="5" Grid.Column="1"
+                               ToolTip.Tip="Display a Windows notification when a render finishes. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <CheckBox Grid.Row="5" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                               IsChecked="{Binding Notifications}" IsEnabled="False"/>
                 </Grid>
@@ -82,8 +89,8 @@
                     <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Movement sensitivity
                     </TextBlock>
-                    <TextBlock Grid.Row="2" Grid.Column="1"
-                               ToolTip.Tip="{Binding SensitivitySlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="2" Grid.Column="1"
+                               ToolTip.Tip="{Binding SensitivitySlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <local:ValueSlider Value="{Binding Sensitivity}" SliderSettings="{Binding SensitivitySlider}" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
                 </Grid>
             </TabItem>
@@ -99,16 +106,16 @@
                         <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                             Save metadata
                         </TextBlock>
-                        <TextBlock Grid.Row="0" Grid.Column="1"
-                                   ToolTip.Tip="Whether to write metadata in the exported images. This includes title, authors, copyright, date of creation and keywords." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <TextBlock Padding="20,0,20,0" Grid.Row="0" Grid.Column="1"
+                                   ToolTip.Tip="Whether to write metadata in the exported images. This includes title, authors, copyright, date of creation and keywords." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                         <CheckBox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                                   IsChecked="{Binding SaveMetadata}"/>
                         <!-- Params in metadata -->
                         <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                             Include params
                         </TextBlock>
-                        <TextBlock Grid.Row="1" Grid.Column="1"
-                                   ToolTip.Tip="Whether to include fractal params in the image metadata. This makes it possible to drop or paste the image in the editor instead of loading param files." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <TextBlock Padding="20,0,20,0" Grid.Row="1" Grid.Column="1"
+                                   ToolTip.Tip="Whether to include fractal params in the image metadata. This makes it possible to drop or paste the image in the editor instead of loading param files." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                         <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                                   IsEnabled="{Binding SaveMetadata}"
                                   IsChecked="{Binding IncludeParamsInMetadata}"/>
@@ -116,8 +123,8 @@
                         <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                             Apply watermark
                         </TextBlock>
-                        <TextBlock Grid.Row="2" Grid.Column="1"
-                                   ToolTip.Tip="Print the author name on exported images. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                        <TextBlock Padding="20,0,20,0" Grid.Row="2" Grid.Column="1"
+                                   ToolTip.Tip="Print the author name on exported images. (coming soon)" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                         <CheckBox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                                   IsChecked="{Binding ApplyWatermark}" IsEnabled="False"/>
                     </Grid>
@@ -140,8 +147,8 @@
                             <Button Command="{Binding ShowFfmpegPathSelectorDialogCommand}"
                                     Content="ffmpeg.exe:"
                                     Padding="8"/>
-                            <TextBlock IsVisible="{Binding IsFfmpegPathSet, Converter={StaticResource InverseBoolConverter}}"
-                                       ToolTip.Tip="In order to save video files, install ffmpeg and select the executable." Text="ℹ️" VerticalAlignment="Center"/>
+                            <TextBlock Padding="20,0,20,0" IsVisible="{Binding IsFfmpegPathSet, Converter={StaticResource InverseBoolConverter}}"
+                                       ToolTip.Tip="In order to save video files, install ffmpeg and select the executable." Text="ⓘ" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding FfmpegPath}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -153,7 +160,7 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center">ffmpeg args: </TextBlock>
-                                    <TextBlock ToolTip.Tip="Provide additional ffmpeg settings here. IFSRenderer handles the following arguments: input, output, fps, audio." Text="ℹ️" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBlock Padding="20,0,20,0" ToolTip.Tip="Provide additional ffmpeg settings here. IFSRenderer handles the following arguments: input, output, fps, audio." Text="ⓘ" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                 </StackPanel>
                                 <Menu Grid.Column="1" Height="22" HorizontalAlignment="Right">
                                     <MenuItem Header="▼ Presets" 
@@ -184,23 +191,23 @@
                     <TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Perceptually uniform updates
                     </TextBlock>
-                    <TextBlock Grid.Row="1" Grid.Column="1"
-                               ToolTip.Tip="This option decreases the display framerate to allow more computing power on the iteration loop. Checked by default." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="1" Grid.Column="1"
+                               ToolTip.Tip="This option decreases the display framerate to allow more computing power on the iteration loop. Checked by default." HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                               IsChecked="{Binding PerceptuallyUniformUpdates}"/>
                     <!-- Target Framerate -->
                     <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Target Framerate
                     </TextBlock>
-                    <TextBlock Grid.Row="2" Grid.Column="1"
-                               ToolTip.Tip="{Binding TargetFramerateSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="2" Grid.Column="1"
+                               ToolTip.Tip="{Binding TargetFramerateSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <local:ValueSlider Value="{Binding TargetFramerate}" SliderSettings="{Binding TargetFramerateSlider}" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
                     <!-- Workgroup -->
                     <TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                         Workgroups
                     </TextBlock>
-                    <TextBlock Grid.Row="3" Grid.Column="1"
-                               ToolTip.Tip="{Binding WorkgroupCountSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ℹ️"/>
+                    <TextBlock Padding="20,0,20,0" Grid.Row="3" Grid.Column="1"
+                               ToolTip.Tip="{Binding WorkgroupCountSlider.ToolTip}" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ⓘ"/>
                     <local:ValueSlider Value="{Binding WorkgroupCount}" SliderSettings="{Binding WorkgroupCountSlider}" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"/>
                 </Grid>
             </TabItem>
