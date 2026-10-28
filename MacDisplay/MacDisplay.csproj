@@ -127,6 +127,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Views/Animation/DopeButtonResources.xaml" />
     <AvaloniaResource Include="Resources/featured_artwork.jpg" />
     <AvaloniaResource Include="Resources/icon_128.png" />
     <Content Include="..\LICENSE" Link="LICENSE">

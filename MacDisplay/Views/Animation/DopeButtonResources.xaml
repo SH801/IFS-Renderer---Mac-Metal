@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:anim="using:IFSEngine.Animation"
                     xmlns:local="using:MacDisplay.Views"
-                    xmlns:helper="using:MacDisplay.Helper">
+                    xmlns:helper="using:MacDisplay.Helper" 
+                    xmlns:vm="using:MacDisplay.ViewModels">
 
     <!-- Custom dope button theme -->
     <ControlTheme x:Key="dopeButtonStyle" TargetType="Button">
@@ -11,6 +12,7 @@
         <Setter Property="Background" Value="#FFB000"/>
         <Setter Property="BorderBrush" Value="#000000"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="40"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}"
@@ -35,32 +37,39 @@
     </TransformGroup>
 
     <!-- Context Menu -->
-    <ContextMenu x:Key="dopeButtonContextMenu">
-        <MenuItem Header="Interpolation Mode" Height="40">
+   <!-- Context Menu -->
+    <ContextMenu x:Key="dopeButtonContextMenu" x:DataType="vm:KeyframeViewModel">
+        <MenuItem Padding="10" Header="{Binding}">
             <MenuItem.HeaderTemplate>
-                <DataTemplate>
-                    <ComboBox ItemsSource="{x:Static helper:EnumHelper.InterpolationModes}"
-                              SelectedValue="{Binding SelectedInterpolationMode}"
-                              PlaceholderText="Interpolation mode"/>
+                <DataTemplate x:DataType="vm:KeyframeViewModel">
+                    <StackPanel Spacing="2">
+                        <TextBlock Margin="0,0,0,10" Text="Interpolation Mode" FontSize="11"/>
+                        <ComboBox ItemsSource="{x:Static helper:EnumHelper.InterpolationModes}"
+                                  SelectedValue="{Binding SelectedInterpolationMode}"
+                                  PlaceholderText="Interpolation mode"/>
+                    </StackPanel>
                 </DataTemplate>
             </MenuItem.HeaderTemplate>
         </MenuItem>
         
-        <MenuItem Header="Easing Direction" Height="40">
+        <MenuItem Padding="10" Header="{Binding}">
             <MenuItem.HeaderTemplate>
-                <DataTemplate>
-                    <ComboBox ItemsSource="{x:Static helper:EnumHelper.EasingDirections}"
-                              SelectedValue="{Binding SelectedEasingDirection}"
-                              PlaceholderText="Easing direction"/>
+                <DataTemplate x:DataType="vm:KeyframeViewModel">
+                    <StackPanel Spacing="2">
+                        <TextBlock Margin="0,0,0,10" Text="Easing Direction" FontSize="11"/>
+                        <ComboBox ItemsSource="{x:Static helper:EnumHelper.EasingDirections}"
+                                  SelectedValue="{Binding SelectedEasingDirection}"
+                                  PlaceholderText="Easing direction"/>
+                    </StackPanel>
                 </DataTemplate>
             </MenuItem.HeaderTemplate>
         </MenuItem>
         
-        <MenuItem Header="Easing Power" Height="55">
+        <MenuItem Padding="10" Header="{Binding}">
             <MenuItem.HeaderTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Foreground="DarkGray" FontSize="11">Easing Power</TextBlock>
+                <DataTemplate x:DataType="vm:KeyframeViewModel">
+                    <StackPanel Spacing="0">
+                        <TextBlock Text="Easing Power" FontSize="11"/>
                         <local:ValueSlider Value="{Binding EasingPower}" 
                                            SliderSettings="{Binding EasingPowerSlider}"/>
                     </StackPanel>

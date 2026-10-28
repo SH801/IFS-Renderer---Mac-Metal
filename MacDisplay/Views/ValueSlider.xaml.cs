@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Input;
 using MacDisplay.ViewModels;
 
@@ -40,17 +41,52 @@ public partial class ValueSlider : UserControl
 
     private void UpdateLabelFormat() { }
 
+    private MainViewModel? FindMainViewModel()
+    {
+        // 1. Check direct DataContext first
+        if (DataContext is MainViewModel directMain) return directMain;
+
+        // 2. Walk up the StyledElement parent chain
+        StyledElement? current = this.Parent as StyledElement;
+        while (current != null)
+        {
+            if (current.DataContext is MainViewModel main)
+            {
+                return main;
+            }
+            current = current.Parent as StyledElement;
+        }
+
+        // 3. Fallback to Window DataContext
+        if (TopLevel.GetTopLevel(this) is Window window && window.DataContext is MainViewModel windowMain)
+        {
+            return windowMain;
+        }
+
+        // 4. Final fallback to desktop lifetime if everything else fails
+        if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop 
+            && desktop.MainWindow?.DataContext is MainViewModel rootMain)
+        {
+            return rootMain;
+        }
+
+        return null;
+    }
+
     private void UpdateAnimatedSymbol()
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             char symbol = ' ';
             IBrush symbolColor = Brushes.Gray;
+
             if (!string.IsNullOrEmpty(AnimationPath))
             {
-                if (TopLevel.GetTopLevel(this) is Window window && window.DataContext is MainViewModel main)
+                // Walk up the tree to find MainViewModel cleanly
+                var mainVm = FindMainViewModel();
+                if (mainVm?.AnimationViewModel != null)
                 {
-                    var animatedState = main.AnimationViewModel.GetChannelCurrentState(AnimationPath);
+                    var animatedState = mainVm.AnimationViewModel.GetChannelCurrentState(AnimationPath);
                     symbol = animatedState switch
                     {
                         null => '◇',
@@ -60,15 +96,22 @@ public partial class ValueSlider : UserControl
 
                     if (animatedState is not null)
                     {
-                        var isValueModified = main.AnimationViewModel.IsChannelBeingModified(AnimationPath, Value);
+                        var isValueModified = mainVm.AnimationViewModel.IsChannelBeingModified(AnimationPath, Value);
                         symbolColor = isValueModified ? Brushes.Orange : Brushes.White;
                     }
                 }
             }
-            symbolButton1.Content = symbol;
-            symbolButton1.Foreground = symbolColor;
-            symbolButton2.Content = symbol;
-            symbolButton2.Foreground = symbolColor;
+
+            if (symbolButton1 != null)
+            {
+                symbolButton1.Content = symbol;
+                symbolButton1.Foreground = symbolColor;
+            }
+            if (symbolButton2 != null)
+            {
+                symbolButton2.Content = symbol;
+                symbolButton2.Foreground = symbolColor;
+            }
         });
     }
 
@@ -390,17 +433,23 @@ public partial class ValueSlider : UserControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        
-        // Ensure we hook into the workspace property changes and update the symbol once attached
-        if (TopLevel.GetTopLevel(this) is Window window && window.DataContext is MainViewModel main)
+
+        // 1. Find the MainViewModel via our robust tree walker or fallbacks
+        var mainVm = FindMainViewModel();
+        if (mainVm != null)
         {
-            // Unsubscribe first to avoid duplicate handlers if re-attached
-            main.workspace.PropertyChanged -= Workspace_PropertyChanged;
-            main.workspace.PropertyChanged += Workspace_PropertyChanged;
-            
-            AnimateCommand = main.AnimationViewModel.AnimateValueCommand;
+            // Subscribe to workspace property changes safely
+            mainVm.workspace.PropertyChanged -= Workspace_PropertyChanged;
+            mainVm.workspace.PropertyChanged += Workspace_PropertyChanged;
+
+            // Wire up the animation command if available
+            if (mainVm.AnimationViewModel != null)
+            {
+                AnimateCommand = mainVm.AnimationViewModel.AnimateValueCommand;
+            }
         }
-        
+
+        // 3. Ensure the keyframe button updates its visibility and state
         UpdateAnimatedSymbol();
     }
 

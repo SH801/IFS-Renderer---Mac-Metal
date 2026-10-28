@@ -61,6 +61,7 @@
     </UserControl.Styles>
 
     <StackPanel Spacing="2">
+
         <Grid IsVisible="{Binding $parent[local:ValueSlider].IsLabelShown}">
             <TextBlock VerticalAlignment="Center"
                        Text="{Binding $parent[local:ValueSlider].Label}"/>

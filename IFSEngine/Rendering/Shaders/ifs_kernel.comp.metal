@@ -809,52 +809,28 @@ kernel void main0(
         color.z = _1504.z;
         if (settings.max_filter_radius > 0)
         {
-            int filter_radius = settings.max_filter_radius;
-            uint param_28 = invocation_hash_cnt;
-            float _1524 = random(param_28, _451, gl_GlobalInvocationID);
-            invocation_hash_cnt = param_28;
-            int ax = (-filter_radius) + int(_1524 * float(2 * filter_radius));
-            uint param_29 = invocation_hash_cnt;
-            float _1537 = random(param_29, _451, gl_GlobalInvocationID);
-            invocation_hash_cnt = param_29;
-            int ay = (-filter_radius) + int(_1537 * float(2 * filter_radius));
-            int2 nb = proj + int2(ax, ay);
-            float pd = distance(float2(nb), projf);
-            float param_30 = pd;
-            float aw = fast::max(0.0, Mitchell_Netravali(param_30)) * float(((filter_radius * filter_radius) * 2) * 2);
-            bool _1570 = nb.x >= 0;
-            bool _1578;
-            if (_1570)
+            const int filter_radius = int(settings.max_filter_radius);
+
+            // Loop through the full filter kernel footprint deterministically
+            for (int ay = -filter_radius; ay <= filter_radius; ay++)
             {
-                _1578 = nb.x < _451.width;
-            }
-            else
-            {
-                _1578 = _1570;
-            }
-            bool _1584;
-            if (_1578)
-            {
-                _1584 = nb.y >= 0;
-            }
-            else
-            {
-                _1584 = _1578;
-            }
-            bool _1592;
-            if (_1584)
-            {
-                _1592 = nb.y < _451.height;
-            }
-            else
-            {
-                _1592 = _1584;
-            }
-            if (_1592)
-            {
-                int2 param_31 = nb;
-                float4 param_32 = color * aw;
-                accumulate_hit(param_31, param_32, _451, _1121);
+                for (int ax = -filter_radius; ax <= filter_radius; ax++)
+                {
+                    int2 nb = proj + int2(ax, ay);
+                    float pd = distance(float2(nb), projf);
+
+                    // Normalize distance by filter radius for Mitchell-Netravali
+                    float normalized_pd = pd / float(filter_radius);
+                    float aw = fast::max(0.0, Mitchell_Netravali(normalized_pd));
+
+                    if (nb.x >= 0 && nb.x < _451.width && nb.y >= 0 && nb.y < _451.height)
+                    {
+                        int2 param_31 = nb;
+                        // Weight scaling factor adjusted for kernel area
+                        float4 param_32 = color * (aw / float(filter_radius * filter_radius));
+                        accumulate_hit(param_31, param_32, _451, _1121);
+                    }
+                }
             }
         }
         else

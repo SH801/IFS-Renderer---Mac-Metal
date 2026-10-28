@@ -36,10 +36,10 @@
                       InputGesture="Ctrl+Y"/>
             <Separator/>
             <local:PaletteButton
-    Command="{Binding LoadPaletteCommand}" 
-    Palette="{Binding Palette}"
-    ToolTip.Tip="Load Palette (Ctrl+P)"
-    Padding="30,8,30,8">🎨</local:PaletteButton>
+                Command="{Binding LoadPaletteCommand}" 
+                Palette="{Binding Palette}"
+                ToolTip.Tip="Load Palette (Ctrl+P)"
+                Padding="30,8,30,8">🎨</local:PaletteButton>
             <MenuItem Header="🗎 🗎"
                       Command="{Binding DuplicateSelectedCommand}"
                       ToolTip.Tip="Duplicate selection (Ctrl+D)" 
@@ -158,7 +158,7 @@
             
             <!-- Right Sidebar / Inspectors -->
             <Border Grid.Column="1" Padding="6" Margin="4" VerticalAlignment="Stretch" Width="300" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
-                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
                     <StackPanel Margin="0,0,8,0">
                         <Grid>
                             <Grid.IsVisible>

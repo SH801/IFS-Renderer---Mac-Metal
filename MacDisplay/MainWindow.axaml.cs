@@ -53,7 +53,7 @@ public partial class MainWindow : Window
             throw new InvalidOperationException("Failed to initialize graphics context.");
 
         // 1. Initialize your renderer (passing whatever context/view mainDisplay requires)
-        _renderer = new RendererGL(mainDisplay); // (Or RendererGL, depending on your setup)
+        _renderer = new RendererGL(mainDisplay); 
         mainDisplay.AttachRenderer(_renderer);
 
         // 2. Pass the real renderer into the workspace instead of null!

@@ -12,6 +12,10 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://IFSRenderer/Views/Animation/DopeButtonResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
             <!-- Converters -->
             <conv:NullToBoolConverter x:Key="NullToBoolConverter"/>
             <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>

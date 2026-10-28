@@ -1,5 +1,7 @@
-﻿using Avalonia.Controls;
-
+﻿using System;
+using Avalonia.Controls;
+using Avalonia;
+using MacDisplay.ViewModels;
 namespace MacDisplay.Views;
 
 /// <summary>

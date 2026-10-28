@@ -132,6 +132,7 @@
                     <Border DockPanel.Dock="Top" Height="30" MinHeight="30" MaxHeight="30" BorderThickness="0,0,0,1" BorderBrush="#222222">
                         <Grid Background="#333333" Cursor="SizeWestEast"
                             PointerMoved="TimeScrubber_PointerMoved"
+                            PointerPressed="TimeScrubber_PointerPressed"
                             PointerWheelChanged="TimeScrubber_PointerWheelChanged">
                             
                             <Grid IsHitTestVisible="False">
@@ -167,7 +168,9 @@
                                         </Grid.ContextMenu>
                                         <Border BorderThickness="0,0,0,1" BorderBrush="#222222">
                                             <!-- Grid container allows multiple children inside the Border -->
-                                            <Grid Background="#111111">
+                                            <Grid Background="#111111"                             
+                                                PointerMoved="TimeScrubber_PointerMoved"
+                                                PointerPressed="TimeScrubber_PointerPressed">
                                                 <!-- Background Ticks matching the scrubber header -->
                                                 <Grid Background="{StaticResource linesBrush}" IsHitTestVisible="False"/>
 
@@ -188,10 +191,8 @@
                                                         <DataTemplate x:CompileBindings="False">
                                                             <!-- Obvious debugging keyframe view -->
                                                             <Border Width="16" Height="24" CornerRadius="3">
-                                                            <local:DopeButton Width="12" Height="14"
-                                                                Margin="-15,0,0,0"
-                                                                Command="{Binding #animationPanel.((viewModels:AnimationViewModel)DataContext).JumpToKeyframeCommand}" 
-                                                                CommandParameter="{Binding}">◈</local:DopeButton>
+                                                            <local:DopeButton Width="26" Height="26"
+                                                                Margin="-15,0,0,0">◈</local:DopeButton>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>

@@ -42,8 +42,6 @@ public partial class AnimationPanel : UserControl
         };
     }
 
-    private Point _dragp;
-
     private async Task RedrawScrubberVisuals()
     {
         scrubberTicksBrush.SourceRect = new RelativeRect(new Point(0, 0), new Size(_vm.ViewScale, 1), RelativeUnit.Absolute);
@@ -80,67 +78,12 @@ public partial class AnimationPanel : UserControl
         return bitmap;
     }
 
-    private void DopeButton_PointerPressed(object sender, PointerPressedEventArgs e)
-    {
-        var dopeButton = (Button)sender;
-        var point = e.GetCurrentPoint(TopLevel.GetTopLevel(this));
-        if (point.Properties.IsLeftButtonPressed)
-        {
-            _dragp = e.GetPosition(TopLevel.GetTopLevel(this));
-            e.Pointer.Capture(dopeButton);
-            dopeButton.Cursor = new Cursor(StandardCursorType.None);
-        }
-    }
-
-    private void DopeButton_PointerMoved(object sender, PointerEventArgs e)
-    {
-        var dopeButton = (Button)sender;
-        var point = e.GetCurrentPoint(TopLevel.GetTopLevel(this));
-        if (point.Properties.IsLeftButtonPressed && e.Pointer.Captured == dopeButton)
-        {
-            double delta = e.GetPosition(TopLevel.GetTopLevel(this)).X - _dragp.X;
-            if (delta != 0.0)
-            {
-                _vm.AddToSelection((KeyframeViewModel)dopeButton.DataContext!);
-                _vm.PreviewRepositionSelectedKeyframes(delta);
-            }
-        }
-    }
-
-    private void DopeButton_PointerReleased(object sender, PointerReleasedEventArgs e)
-    {
-        var dopeButton = (Button)sender;
-        if (e.InitialPressMouseButton == MouseButton.Left)
-        {
-            if (_vm.KeyframeRepositionOffset != 0.0)
-                _vm.ApplyRepositionOfSelectedKeyframes();
-            else
-                _vm.FlipSelection((KeyframeViewModel)dopeButton.DataContext!);
-
-            dopeButton.Cursor = Cursor.Default;
-            e.Pointer.Capture(null);
-            _dragp = new Point(0, 0);
-
-            if (dopeButton.Command?.CanExecute(dopeButton.DataContext) == true)
-            {
-                dopeButton.Command.Execute(dopeButton.DataContext);
-            }
-        }
-    }
-
     private void ChannelHeaderScroller_ScrollChanged(object? sender, ScrollChangedEventArgs e) 
         => sheetScroller.Offset = new Vector(sheetScroller.Offset.X, channelHeaderScroller.Offset.Y);
 
-    private void Channel_PointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (e.InitialPressMouseButton == MouseButton.Right && sender is Visual visual)
-        {
-            _vm.KeyframeInsertPosition = e.GetPosition(visual).X / _vm.ViewScale;
-        }
-    }
-
     private void ChannelGrid_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+
         var point = e.GetCurrentPoint(sender as Visual);
         if (point.Properties.IsRightButtonPressed)
         {
@@ -153,8 +96,22 @@ public partial class AnimationPanel : UserControl
         }
     }
 
+    private void TimeScrubber_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var point = e.GetCurrentPoint((Visual?)sender);
+        if (point.Properties.IsLeftButtonPressed && e.Source == sender)
+        {
+            var rawT = e.GetPosition((Visual?)sender).X / _vm.ViewScale;
+            var t = Math.Clamp(rawT, 0.0, _vm.ClipLength);
+            
+            _vm.JumpToTime(t);
+            e.Handled = true;
+        }
+    }
+
     private void TimeScrubber_PointerMoved(object? sender, PointerEventArgs e)
     {
+
         var point = e.GetCurrentPoint((Visual?)sender);
         if (point.Properties.IsLeftButtonPressed && e.Source == sender)
         {
@@ -164,23 +121,6 @@ public partial class AnimationPanel : UserControl
             var t = Math.Clamp(rawT, 0.0, _vm.ClipLength);
             
             _vm.JumpToTime(t);
-        }
-    }
-
-    private void Dopesheet_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        var point = e.GetCurrentPoint((Visual?)sender);
-        if (point.Properties.IsLeftButtonPressed)
-        {
-            if (e.ClickCount == 1)
-            {
-                _vm.ClearSelectionCommand.Execute(null);
-            }
-            else if (e.ClickCount == 2 && sender is Control { DataContext: ChannelViewModel channel })
-            {
-                _vm.KeyframeInsertPosition = e.GetPosition((Visual)sender).X / _vm.ViewScale;
-                channel.InsertKeyframe();
-            }
         }
     }
 

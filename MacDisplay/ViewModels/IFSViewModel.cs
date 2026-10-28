@@ -30,6 +30,7 @@ namespace MacDisplay.ViewModels;
 public partial class IFSViewModel : ObservableObject
 {
     private readonly Workspace _workspace;
+    public Workspace Workspace => _workspace;
 
     public IEnumerable<object> NodeMapElements => _connectionViewModels.Cast<object>().Concat(_iteratorViewModels);
     public IEnumerable<TransformPlugin> FilteredTransforms => FilterTransforms(_workspace.LoadedTransforms);

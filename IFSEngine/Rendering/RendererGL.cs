@@ -344,6 +344,7 @@ public sealed class RendererGL : IAsyncDisposable
         {
             HistogramWidth = newWidth;
             HistogramHeight = newHeight;
+            Console.WriteLine("[RendererGL] SetHistogramScale: " + newWidth.ToString() + "," + newHeight.ToString());
             OnResolutionChanged?.Invoke(HistogramWidth, HistogramHeight);
             _invalidHistogramResolution = true;
             InvalidateHistogramBuffer();
@@ -1424,7 +1425,7 @@ if (iter.tfId == {0})
 
     public unsafe void Test()
     {
-        Console.WriteLine("[Test] Starting Metal Compute Circle Test...");
+        Console.WriteLine(" ****** TEST *******");
 
         if ((_device.NativePtr == IntPtr.Zero) || (_device.NativePtr == IntPtr.Zero))
         {
@@ -1432,9 +1433,12 @@ if (iter.tfId == {0})
             return;
         }
 
-        int width = 1350;
-        int height = 759;
+        int width = HistogramWidth;
+        int height = HistogramHeight;
         int totalPixels = width * height;
+
+        Console.WriteLine(width);
+        Console.WriteLine(height);
 
         // 11. Readback and analyze histogram buffer data
         Vector4* histPtr = (Vector4*)_histogramBuffer.Contents.ToPointer();
