@@ -1,9 +1,11 @@
 ﻿#pragma warning disable CS0649
 
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace IFSEngine.Rendering.GpuStructs;
 
+[StructLayout(LayoutKind.Sequential)]
 internal struct CameraStruct
 {
     internal Matrix4x4 viewProjMatrix;

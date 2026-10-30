@@ -29,6 +29,8 @@ using MacDisplay.Services;
 
 namespace MacDisplay.ViewModels;
 
+public record TemplateItem(string Name, string Path);
+
 public sealed partial class MainViewModel : ObservableObject, IAsyncDisposable
 {
     internal readonly Workspace workspace;
@@ -103,6 +105,8 @@ public sealed partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     public static IEnumerable<string> RecentFilePaths => Workspace.RecentFilePaths.Reverse();
     public static bool HasRecentFiles => RecentFilePaths.Any();
+    public static IEnumerable<TemplateItem> TemplateItems => 
+        Workspace.TemplateFilePaths.Select(path => new TemplateItem(Path.GetFileNameWithoutExtension(path), path));
     public static IReadOnlyDictionary<string, string> Templates => Workspace.TemplateFilePaths.ToDictionary(path => path, path => Path.GetFileNameWithoutExtension(path));
 
     public MainViewModel(Workspace workspace, WelcomeWorkflow workflow)
@@ -265,6 +269,9 @@ public sealed partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     [RelayCommand]
     private async Task LoadTemplate(string path) => await LoadParamsFromFile(path, true);
+
+    [RelayCommand]
+    private async Task LoadParamsFromFile(string path) => await LoadParamsFromFile(path, false);
 
     private async Task LoadParamsFromFile(string path, bool isTemplate)
     {

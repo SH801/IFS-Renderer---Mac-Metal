@@ -215,7 +215,7 @@ public partial class InteractiveDisplay : UserControl
     }
 
     public void UpdateBitmapSize(int width, int height)
-    {
+    {        
         Dispatcher.UIThread.Post(() =>
         {
             // Only recreate if dimensions actually changed or it doesn't exist yet

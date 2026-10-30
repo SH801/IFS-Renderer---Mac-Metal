@@ -48,9 +48,9 @@ inline float mix(float x, float y, bool cond) {
 #define notEqual(x, y) ((x) != (y))
 
 // --- Sentinel Value ---
-constant float3 discarded_point = float3(0.0f);
+constant float3 discarded_point = as_type<float3>(uint3(0x7fc00000));
 
-// --- Hash Function Fallbacks (if not already provided by @includes) ---
+// --- Hash Function Fallbacks (if not already provided by includes) ---
 inline float f_hash2(float x, float y) {
     return fract(sin(dot(float2(x, y), float2(12.9898f, 78.233f))) * 43758.5453f);
 }

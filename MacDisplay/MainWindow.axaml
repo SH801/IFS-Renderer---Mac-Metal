@@ -120,20 +120,40 @@
                     <MenuItem Header="📑 _File">
                         <MenuItem Header="📑 _New" Command="{Binding NewCommand}" InputGesture="Ctrl+N"/>
                         
-                        <MenuItem Header="🗂️ _Templates" ItemsSource="{Binding Templates}">
+                        <MenuItem Header="🗂️ _Templates" ItemsSource="{Binding TemplateItems}">
                             <MenuItem.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Value}"/>
+                                    <TextBlock Text="{Binding Name}"/>
                                 </DataTemplate>
                             </MenuItem.ItemTemplate>
+                            <MenuItem.Styles>
+                                <!-- Point x:DataType to your ViewModel namespace prefix where TemplateItem lives -->
+                                <Style Selector="MenuItem" x:DataType="vm:TemplateItem">
+                                    <Setter Property="Command" Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).LoadTemplateCommand}"/>
+                                    <Setter Property="CommandParameter" Value="{Binding Path}"/>
+                                </Style>
+                            </MenuItem.Styles>
                         </MenuItem>
 
                         <MenuItem Header="📜 Recents" ItemsSource="{Binding RecentFilePaths}" IsEnabled="{Binding HasRecentFiles}">
+                            <MenuItem.Resources>
+                                <!-- Override the theme max-width resource locally for this menu tree -->
+                                <x:Double x:Key="FlyoutThemeMaxWidth">1200</x:Double>
+                            </MenuItem.Resources>
                             <MenuItem.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}"/>
+                                    <TextBlock Text="{Binding}" TextWrapping="NoWrap"/>
                                 </DataTemplate>
                             </MenuItem.ItemTemplate>
+                            <MenuItem.ItemContainerTheme>
+                                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
+                                    <Setter Property="Command" Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).LoadParamsFromFileCommand}"/>
+                                    <Setter Property="CommandParameter" Value="{Binding}"/>
+                                    <Setter Property="MinWidth" Value="1000"/>
+                                    <Setter Property="MaxWidth" Value="1000"/>
+
+                                </ControlTheme>
+                            </MenuItem.ItemContainerTheme>
                         </MenuItem>
 
                         <MenuItem Header="📂 _Load..." Command="{Binding ShowLoadParamsDialogCommand}" InputGesture="Ctrl+O"/>

@@ -226,7 +226,11 @@
       <AppSourceDir>$(OutputPath)$(AssemblyName).app/</AppSourceDir>
       <!-- Points to your main IFS Renderer folder (one level above MacDisplay) -->
       <AppDestDir>$(MSBuildProjectDirectory)\..\</AppDestDir>
+      <TargetAppBundle>$(AppDestDir)$(AssemblyName).app</TargetAppBundle>
     </PropertyGroup>
+
+    <Message Text="Cleaning old app bundle at $(TargetAppBundle)..." Importance="high" />
+    <RemoveDir Directories="$(TargetAppBundle)" Condition="Exists('$(TargetAppBundle)')" />
 
     <!-- Ensure the source exists before copying -->
     <Message Text="Copying $(AssemblyName).app to root folder..." Importance="high" />

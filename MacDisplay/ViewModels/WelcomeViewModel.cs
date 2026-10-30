@@ -101,7 +101,8 @@ public sealed partial class WelcomeViewModel : ObservableObject
             {
                 templateFilesTasks = Directory
                     .GetFiles(templatesDir, "*.ifsjson")
-                    .Select(templatePath => IfsNodesSerializer.LoadJsonFileAsync(templatePath, _loadedTransforms, _loadedEffects, true))
+                    .OrderBy(path => path)
+                     .Select(templatePath => IfsNodesSerializer.LoadJsonFileAsync(templatePath, _loadedTransforms, _loadedEffects, true))
                     .ToList();
             }
             var recentFilePaths = Settings.Default.RecentFiles.Cast<string>();

@@ -1,7 +1,9 @@
 ﻿#pragma warning disable CS0649
+using System.Runtime.InteropServices;
 
 namespace IFSEngine.Rendering.GpuStructs;
 
+[StructLayout(LayoutKind.Sequential)]
 internal struct SettingsStruct
 {
     internal CameraStruct camera_params;

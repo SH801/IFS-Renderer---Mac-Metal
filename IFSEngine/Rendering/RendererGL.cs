@@ -663,6 +663,20 @@ public sealed class RendererGL : IAsyncDisposable
                 mark_area_in_focus = MarkAreaInFocus ? 1 : 0
             };
 
+var cam = LoadedParams.Camera.GetCameraParameters(); // Or however you populate it
+
+Console.WriteLine("--- CameraStruct CPU Debug ---");
+Console.WriteLine($"Position       : X={cam.position.X:F4}, Y={cam.position.Y:F4}, Z={cam.position.Z:F4}, W={cam.position.W:F4}");
+Console.WriteLine($"Forward        : X={cam.forward.X:F4}, Y={cam.forward.Y:F4}, Z={cam.forward.Z:F4}, W={cam.forward.W:F4}");
+Console.WriteLine($"Focus Point    : X={cam.focus_point.X:F4}, Y={cam.focus_point.Y:F4}, Z={cam.focus_point.Z:F4}, W={cam.focus_point.W:F4}");
+Console.WriteLine($"Aperture       : {cam.aperture}");
+Console.WriteLine($"Focus Distance : {cam.focus_distance}");
+Console.WriteLine($"Depth of Field : {cam.depth_of_field}");
+Console.WriteLine($"Projection Type: {cam.projection_type}");
+
+// Optional: Quick peek at the view/projection matrix rows if needed
+Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMatrix.M12}, {cam.viewProjMatrix.M13}, {cam.viewProjMatrix.M14}");
+
             if (_settingsBuffer.Contents != IntPtr.Zero)
             {
                 Marshal.StructureToPtr(settings, _settingsBuffer.Contents, false);
@@ -703,12 +717,15 @@ public sealed class RendererGL : IAsyncDisposable
                     reset_alias = aliasTables[iti].k,
                     reset_prob = (float)aliasTables[iti].u
                 });
-                allRealParams.AddRange(it.RealParams.Values.Select(p => (float)p).ToList());
-                allVec3Params.AddRange(it.Vec3Params.Values.Select(p => new Vector4(p, 0.0f)).ToList());
+                allRealParams.AddRange(it.RealParams.Values.Select(p => (float)p).ToList());                
+                allVec3Params.AddRange(it.Vec3Params.Values.Select(p => new Vector4(p, 1.0f)).ToList());
+                Console.WriteLine(string.Format("tfId of active transform: {0}", _registeredTransforms?.IndexOf(it.Transform)));
             }
 
             UpdateBufferData(ref _iteratorsBuffer, its.ToArray(), ref _iteratorsBufferSize, its.Count);
-            UpdateBufferData(ref _realParametersBuffer, allRealParams.Select(f => new Vector4(f)).ToArray(), ref _realParametersBufferSize, allRealParams.Count);
+
+            float[] paramArray = allRealParams.ToArray();
+            UpdateBufferData(ref _realParametersBuffer, paramArray, ref _realParametersBufferSize, paramArray.Length);
             UpdateBufferData(ref _vec3ParametersBuffer, allVec3Params.ToArray(), ref _vec3ParametersBufferSize, allVec3Params.Count);
 
             double SumWeights = currentIterators.Sum(i => i.BaseWeight);
@@ -766,7 +783,6 @@ public sealed class RendererGL : IAsyncDisposable
             depth = 1 
         };
 
-        computeEncoder.DispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup);
         computeEncoder.DispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup);
         computeEncoder.EndEncoding();
 
@@ -900,7 +916,7 @@ public sealed class RendererGL : IAsyncDisposable
     /// <summary>
     /// Format: float[y, x, rgba]
     /// </summary>
-    public async Task<float[,,]> ReadPixelData()
+public async Task<float[,,]> ReadPixelData()
     {
         Console.WriteLine("[RendererGL] ReadPixelData invoked");
         if (!IsInitialized)
@@ -950,11 +966,14 @@ public sealed class RendererGL : IAsyncDisposable
                 int index = 0;
                 for (int y = 0; y < HistogramHeight; y++)
                 {
+                    // Invert the row index here to flip the image vertically right-side up
+                    int targetY = HistogramHeight - 1 - y;
+
                     for (int x = 0; x < HistogramWidth; x++)
                     {
                         for (int c = 0; c < 4; c++)
                         {
-                            o[y, x, c] = flatData[index++];
+                            o[targetY, x, c] = flatData[index++];
                         }
                     }
                 }
@@ -1017,7 +1036,13 @@ public sealed class RendererGL : IAsyncDisposable
 
         // var div = LoadedParams.Brightness * (1.0 + (TotalIterations / (ulong)(HistogramWidth * HistogramHeight)));
         for (int i = 0; i < o2.Length; i++)
+        {
+            // if (o2[i] != 0) 
+            // {
+            //     Console.WriteLine(string.Format("Position: {0}, value: {1}", i, o2[i]));
+            // }
             o2[i] = (float)(o2[i] / div);
+        }
 
         var histogram = o2
             .Chunk(4)
@@ -1393,6 +1418,10 @@ if (iter.tfId == {0})
         string computeShaderSource = new StreamReader(resource).ReadToEnd();
         computeShaderSource = computeShaderSource.Replace("@includes", _includesSource);
         computeShaderSource = computeShaderSource.Replace("@transforms", transformsSource);
+
+        // Console.WriteLine("--- GENERATED METAL SHADER START ---");
+        // Console.WriteLine(computeShaderSource);
+        // Console.WriteLine("--- GENERATED METAL SHADER END ---");
 
         MTLLibrary? computeLibrary = null;
         var compileOptions = new MTLCompileOptions();

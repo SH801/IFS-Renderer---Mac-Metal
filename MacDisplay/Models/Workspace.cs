@@ -40,7 +40,7 @@ public partial class Workspace : ObservableObject
     public static string TemplatesDirectoryPath => Path.Combine(AppContext.BaseDirectory, "Templates");
     public static string LibraryDirectoryPath => Path.Combine(AppContext.BaseDirectory, "Library");
     public static string IncludesDirectoryPath => Path.Combine(AppContext.BaseDirectory, "Includes");
-    public static string TransformsDirectoryPath => Path.Combine(AppContext.BaseDirectory, "Transforms");
+    public static string TransformsDirectoryPath => Path.Combine(AppContext.BaseDirectory, "Transforms");    
     public static string PostEffectsDirectoryPath => Path.Combine(AppContext.BaseDirectory, "PostEffects");
 
     public event EventHandler<string>? StatusTextChanged;
@@ -145,13 +145,14 @@ public partial class Workspace : ObservableObject
         var includeNames = includeFiles.Select(i => Path.GetFileName(i)).ToList();
 
         //load transform plugins
+        Console.WriteLine(TransformsDirectoryPath);
         var transformFiles = Directory.Exists(TransformsDirectoryPath) 
             ? Directory.GetFiles(TransformsDirectoryPath, "*.ifstf", SearchOption.AllDirectories) 
             : [];
         var loadTransformTasks = transformFiles.Select(file => TransformPlugin.FromFile(file));
-        var allTransforms = (await Task.WhenAll(loadTransformTasks)).ToList();
+        var allTransforms = (await Task.WhenAll(loadTransformTasks)).OrderBy(e => e.Name).ToList();
         var skippedTransforms = allTransforms.Where(t => t.IncludeUses.Any(u => !includeNames.Contains(u)));
-        _loadedTransforms = allTransforms.Except(skippedTransforms).OrderBy(e => e.Name).ToList();
+        _loadedTransforms = allTransforms.Except(skippedTransforms).ToList();
         OnPropertyChanged(nameof(LoadedTransforms));
 
         //load postfx plugins
@@ -159,7 +160,7 @@ public partial class Workspace : ObservableObject
             ? Directory.GetFiles(PostEffectsDirectoryPath, "*.ifsfx", SearchOption.AllDirectories) 
             : [];
         var loadPostFxTasks = postFxFiles.Select(file => EffectPlugin.FromFile(file));
-        var allPostFxs = (await Task.WhenAll(loadPostFxTasks)).ToList();
+        var allPostFxs = (await Task.WhenAll(loadPostFxTasks)).OrderBy(e => e.Name).ToList();
         var skippedPostFxs = allPostFxs.Where(t => t.IncludeUses.Any(u => !includeNames.Contains(u)));
         _loadedEffects = allPostFxs.Except(skippedPostFxs).OrderBy(e => e.Name).ToList();
         OnPropertyChanged(nameof(LoadedEffects));
