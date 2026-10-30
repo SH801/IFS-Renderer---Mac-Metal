@@ -23,7 +23,7 @@ public static class BitmapHelper
             new PixelSize(width, height),
             new Vector(96, 96),
             PixelFormat.Bgra8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
 
         using (var framebuffer = writeableBitmap.Lock())
         {

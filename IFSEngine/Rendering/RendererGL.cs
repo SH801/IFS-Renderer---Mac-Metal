@@ -663,19 +663,19 @@ public sealed class RendererGL : IAsyncDisposable
                 mark_area_in_focus = MarkAreaInFocus ? 1 : 0
             };
 
-var cam = LoadedParams.Camera.GetCameraParameters(); // Or however you populate it
+            var cam = LoadedParams.Camera.GetCameraParameters(); // Or however you populate it
 
-Console.WriteLine("--- CameraStruct CPU Debug ---");
-Console.WriteLine($"Position       : X={cam.position.X:F4}, Y={cam.position.Y:F4}, Z={cam.position.Z:F4}, W={cam.position.W:F4}");
-Console.WriteLine($"Forward        : X={cam.forward.X:F4}, Y={cam.forward.Y:F4}, Z={cam.forward.Z:F4}, W={cam.forward.W:F4}");
-Console.WriteLine($"Focus Point    : X={cam.focus_point.X:F4}, Y={cam.focus_point.Y:F4}, Z={cam.focus_point.Z:F4}, W={cam.focus_point.W:F4}");
-Console.WriteLine($"Aperture       : {cam.aperture}");
-Console.WriteLine($"Focus Distance : {cam.focus_distance}");
-Console.WriteLine($"Depth of Field : {cam.depth_of_field}");
-Console.WriteLine($"Projection Type: {cam.projection_type}");
+            Console.WriteLine("--- CameraStruct CPU Debug ---");
+            Console.WriteLine($"Position       : X={cam.position.X:F4}, Y={cam.position.Y:F4}, Z={cam.position.Z:F4}, W={cam.position.W:F4}");
+            Console.WriteLine($"Forward        : X={cam.forward.X:F4}, Y={cam.forward.Y:F4}, Z={cam.forward.Z:F4}, W={cam.forward.W:F4}");
+            Console.WriteLine($"Focus Point    : X={cam.focus_point.X:F4}, Y={cam.focus_point.Y:F4}, Z={cam.focus_point.Z:F4}, W={cam.focus_point.W:F4}");
+            Console.WriteLine($"Aperture       : {cam.aperture}");
+            Console.WriteLine($"Focus Distance : {cam.focus_distance}");
+            Console.WriteLine($"Depth of Field : {cam.depth_of_field}");
+            Console.WriteLine($"Projection Type: {cam.projection_type}");
 
-// Optional: Quick peek at the view/projection matrix rows if needed
-Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMatrix.M12}, {cam.viewProjMatrix.M13}, {cam.viewProjMatrix.M14}");
+            // Optional: Quick peek at the view/projection matrix rows if needed
+            Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMatrix.M12}, {cam.viewProjMatrix.M13}, {cam.viewProjMatrix.M14}");
 
             if (_settingsBuffer.Contents != IntPtr.Zero)
             {
@@ -809,6 +809,8 @@ Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMat
         {
             IsRendering = true;
 
+            InvocationIters = 2000;
+
             ThreadPool.QueueUserWorkItem((_) =>
             {
                 Console.WriteLine("[RendererGL] RenderLoop Thread Started");
@@ -822,7 +824,7 @@ Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMat
 
                     var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
-                    AdjustWorkloadSize(elapsedMs);
+                    // AdjustWorkloadSize(elapsedMs);
 
                     bool target = BitOperations.Log2(1 + TotalIterations / (ulong)(HistogramWidth * HistogramHeight)) >= LoadedParams.TargetIterationLevel;
                     bool isTargetIterationReachedByCurrentDispatch = !IsTargetIterationReached && target;
@@ -970,6 +972,7 @@ public async Task<float[,,]> ReadPixelData()
                     int targetY = HistogramHeight - 1 - y;
 
                     for (int x = 0; x < HistogramWidth; x++)
+                    // for (int x = 0; x < HistogramWidth; x++)
                     {
                         for (int c = 0; c < 4; c++)
                         {
@@ -1026,6 +1029,7 @@ public async Task<float[,,]> ReadPixelData()
             if (bufferPtr != IntPtr.Zero)
             {
                 Marshal.Copy(bufferPtr, o2, 0, o2.Length);
+                Console.WriteLine($"[Debug] First 5 raw buffer values: {o2[0]}, {o2[1]}, {o2[2]}, {o2[3]}, {o2[4]}");
             }
 
             stagingBuffer.Dispose();
@@ -1034,21 +1038,19 @@ public async Task<float[,,]> ReadPixelData()
         var totalPixels = (double)(HistogramWidth * HistogramHeight);
         var div = LoadedParams.Brightness * (1.0 + ((double)TotalIterations / totalPixels));
 
-        // var div = LoadedParams.Brightness * (1.0 + (TotalIterations / (ulong)(HistogramWidth * HistogramHeight)));
+        Console.WriteLine($"Divisor parameters: Brightness {LoadedParams.Brightness} TotalIterations {TotalIterations} TotalPixels {totalPixels} width {HistogramWidth} height {HistogramHeight} divisor {div}");
+
         for (int i = 0; i < o2.Length; i++)
         {
-            // if (o2[i] != 0) 
-            // {
-            //     Console.WriteLine(string.Format("Position: {0}, value: {1}", i, o2[i]));
-            // }
             o2[i] = (float)(o2[i] / div);
         }
 
         var histogram = o2
             .Chunk(4)
             .Chunk(HistogramWidth)
-            .Chunk(HistogramHeight)
-            .First().ToArray();
+            .ToArray()      // Creates the outer array (float[][][])
+            .Reverse()      // Flips the rows vertically
+            .ToArray();
 
         Console.WriteLine("[RendererGL] ReadHistogramData finished");
         return histogram;

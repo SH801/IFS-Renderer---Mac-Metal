@@ -265,6 +265,16 @@ __pycache__/
 
 GPU_Test_Metal.cs
 GPU_Test_Metal/
+GPU_Test_OpenGL/
 IFSDebugger/
 IFSTransforms/Transforms_New/
 IFSTransforms/Transforms_Original/
+IFSTransforms/Transforms/SphereFill.ifstf
+IFSTransforms/Transforms/StarBirthGate.ifstf
+IFSTransforms/Transforms/StarBirthMiniSpheres.ifstf
+IFSTransforms/Transforms/StarBirthMiniSpheresOriginal.ifstf
+IFSTransforms/Transforms/StarBirthSphereGate.ifstf
+IFSTransforms/Transforms/StarNebulaGate.ifstf
+IFSTransforms/Transforms/StarPointDraw.ifstf
+IFSTransforms/Transforms/StarPopFromInput.ifstf
+IFSTransforms/Transforms/StarSpriteBlur.ifstf

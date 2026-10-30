@@ -150,13 +150,11 @@ public partial class InteractiveDisplay : UserControl
         // 1. Wire up the resolution change callback
         Renderer.OnResolutionChanged = (width, height) =>
         {
-            UpdateBitmapSize(width, height);
         };
 
         Renderer.OnFrameReady += (bgra, bufferSize) =>
         {
-            // 1. Immediately make a thread-safe copy of the payload synchronously 
-            // so the render thread is free to loop without mutating our source data.
+            // 1. Make a thread-safe copy of the raw source payload
             byte[] bgraCopy = new byte[bufferSize];
             Buffer.BlockCopy(bgra, 0, bgraCopy, 0, (int)bufferSize);
 
@@ -165,34 +163,73 @@ public partial class InteractiveDisplay : UserControl
                 if (_writeableBitmap == null)
                     return;
 
+                int srcWidth = Renderer.HistogramWidth;
+                int srcHeight = Renderer.HistogramHeight;
+                
+                // Destination size is whatever your WriteableBitmap / preview canvas size is
+                int destWidth = _writeableBitmap.PixelSize.Width;
+                int destHeight = _writeableBitmap.PixelSize.Height;
+
+                // Calculate aspect-ratio preserving scale (Uniform fit)
+                float scaleX = (float)destWidth / srcWidth;
+                float scaleY = (float)destHeight / srcHeight;
+                float scale = Math.Min(scaleX, scaleY);
+
+                int scaledWidth = (int)(srcWidth * scale);
+                int scaledHeight = (int)(srcHeight * scale);
+
+                // Center offsets for letterboxing / pillarboxing
+                int offsetX = (destWidth - scaledWidth) / 2;
+                int offsetY = (destHeight - scaledHeight) / 2;
+
                 using (var lockedFrame = _writeableBitmap.Lock())
                 {
                     unsafe
                     {
-                        fixed (byte* srcPtr = bgraCopy) // Use our safe copy!
+                        byte* destBase = (byte*)lockedFrame.Address;
+                        int destStride = lockedFrame.RowBytes;
+                        int srcStride = srcWidth * 4;
+
+                        // 2. Clear the entire destination bitmap to solid black first
+                        for (int y = 0; y < destHeight; y++)
                         {
-                            byte* destPtr = (byte*)lockedFrame.Address;
-
-                            int targetWidth = Renderer.HistogramWidth;
-                            int targetHeight = Renderer.HistogramHeight;
-
-                            int srcRowBytes = targetWidth * 4;
-
-                            int rowBytesToCopy = Math.Min(
-                                srcRowBytes,
-                                lockedFrame.RowBytes);
-
-                            int rowsToCopy = Math.Min(
-                                targetHeight,
-                                _writeableBitmap.PixelSize.Height);
-
-                            for (int y = 0; y < rowsToCopy; y++)
+                            byte* row = destBase + (y * destStride);
+                            for (int x = 0; x < destWidth; x++)
                             {
-                                Buffer.MemoryCopy(
-                                    srcPtr + (y * srcRowBytes),
-                                    destPtr + (y * lockedFrame.RowBytes),
-                                    lockedFrame.RowBytes,
-                                    rowBytesToCopy);
+                                int idx = x * 4;
+                                row[idx + 0] = 0;   // Blue
+                                row[idx + 1] = 0;   // Green
+                                row[idx + 2] = 0;   // Red
+                                row[idx + 3] = 255; // Alpha (Opaque black)
+                            }
+                        }
+
+                        // 3. Draw the scaled source image into the centered region
+                        fixed (byte* srcBase = bgraCopy)
+                        {
+                            for (int dy = 0; dy < scaledHeight; dy++)
+                            {
+                                int sy = (int)(dy / scale);
+                                if (sy >= srcWidth) // bounds check
+                                    sy = srcHeight - 1;
+
+                                byte* srcRow = srcBase + (sy * srcStride);
+                                byte* destRow = destBase + ((offsetY + dy) * destStride);
+
+                                for (int dx = 0; dx < scaledWidth; dx++)
+                                {
+                                    int sx = (int)(dx / scale);
+                                    if (sx >= srcWidth)
+                                        sx = srcWidth - 1;
+
+                                    int srcIdx = sx * 4;
+                                    int destIdx = (offsetX + dx) * 4;
+
+                                    destRow[destIdx + 0] = srcRow[srcIdx + 0];
+                                    destRow[destIdx + 1] = srcRow[srcIdx + 1];
+                                    destRow[destIdx + 2] = srcRow[srcIdx + 2];
+                                    destRow[destIdx + 3] = srcRow[srcIdx + 3];
+                                }
                             }
                         }
                     }
@@ -212,6 +249,8 @@ public partial class InteractiveDisplay : UserControl
 
         // 1. Tell renderer to update its internal target resolution
         Renderer.SetDisplayResolution(width, height);
+
+        UpdateBitmapSize(width, height);
     }
 
     public void UpdateBitmapSize(int width, int height)

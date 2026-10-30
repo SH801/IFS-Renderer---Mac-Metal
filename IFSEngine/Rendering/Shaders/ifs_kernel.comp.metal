@@ -559,18 +559,18 @@ void accumulate_hit(thread const int2& proj, thread const float4& color, constan
     int ipx = proj.x + (proj.y * _451.width);
     
     // Safety check against buffer array limits
-    // (Assuming your histogram buffer is allocated for width * height elements)
     if (ipx < 0 || (unsigned int)ipx >= (unsigned int)(_451.width * _451.height))
     {
         return;
     }
 
-    float4 _1126 = _1121.histogram[ipx];
-    float3 _1128 = _1126.xyz + color.xyz;
-    ((device float*)&_1121.histogram[ipx])[0u] = _1128.x;
-    ((device float*)&_1121.histogram[ipx])[1u] = _1128.y;
-    ((device float*)&_1121.histogram[ipx])[2u] = _1128.z;
-    ((device float*)&_1121.histogram[ipx])[3u] += color.w;
+    // Treat the underlying float4 components as atomic_float pointers for thread-safe accumulation
+    device atomic_float* channels = (device atomic_float*)&_1121.histogram[ipx];
+
+    atomic_fetch_add_explicit(&channels[0], color.x, memory_order_relaxed);
+    atomic_fetch_add_explicit(&channels[1], color.y, memory_order_relaxed);
+    atomic_fetch_add_explicit(&channels[2], color.z, memory_order_relaxed);
+    atomic_fetch_add_explicit(&channels[3], color.w, memory_order_relaxed);
 }
 
 @includes
@@ -811,26 +811,23 @@ kernel void main0(
         {
             const int filter_radius = int(settings.max_filter_radius);
 
-            // Loop through the full filter kernel footprint deterministically
-            for (int ay = -filter_radius; ay <= filter_radius; ay++)
+            // Ensure unique hash per thread invocation to avoid wedges
+            uint local_hash = invocation_hash_cnt ^ (gl_GlobalInvocationID.x * 1973 + gl_GlobalInvocationID.y * 9277);
+
+            int ax = -filter_radius + int(random(local_hash, _451, gl_GlobalInvocationID) * 2.0f * float(filter_radius));
+            int ay = -filter_radius + int(random(local_hash, _451, gl_GlobalInvocationID) * 2.0f * float(filter_radius));
+
+            int2 nb = proj + int2(ax, ay);
+            float pd = distance(float2(nb), projf);
+
+            // Exact weight calculation from your original OpenGL code
+            float aw = max(0.0f, Mitchell_Netravali(pd)) * float(filter_radius * filter_radius * 4);
+
+            if (nb.x >= 0 && nb.x < _451.width && nb.y >= 0 && nb.y < _451.height)
             {
-                for (int ax = -filter_radius; ax <= filter_radius; ax++)
-                {
-                    int2 nb = proj + int2(ax, ay);
-                    float pd = distance(float2(nb), projf);
-
-                    // Normalize distance by filter radius for Mitchell-Netravali
-                    float normalized_pd = pd / float(filter_radius);
-                    float aw = fast::max(0.0, Mitchell_Netravali(normalized_pd));
-
-                    if (nb.x >= 0 && nb.x < _451.width && nb.y >= 0 && nb.y < _451.height)
-                    {
-                        int2 param_31 = nb;
-                        // Weight scaling factor adjusted for kernel area
-                        float4 param_32 = color * (aw / float(filter_radius * filter_radius));
-                        accumulate_hit(param_31, param_32, _451, _1121);
-                    }
-                }
+                int2 param_31 = nb;
+                float4 param_32 = color * aw;
+                accumulate_hit(param_31, param_32, _451, _1121);
             }
         }
         else
