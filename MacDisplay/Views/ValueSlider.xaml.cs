@@ -24,6 +24,15 @@ public partial class ValueSlider : UserControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetCursorPos(int X, int Y);
 
+    public static readonly StyledProperty<string> EditTextProperty =
+        AvaloniaProperty.Register<ValueSlider, string>(nameof(EditText), string.Empty);
+
+    public string EditText
+    {
+        get => GetValue(EditTextProperty);
+        set => SetValue(EditTextProperty, value);
+    }
+
     private static double IncrementMultiplier
     {
         get
@@ -341,24 +350,31 @@ public partial class ValueSlider : UserControl
         if (e.Key is Key.Return or Key.Enter)
         {
             e.Handled = true;
-            ValueWillChangeAction?.Invoke();
-            StartEditing();
-            ValueChangedAction?.Invoke(Value);
+            if (double.TryParse(EditText, out double parsed))
+            {
+                ValueWillChangeAction?.Invoke();
+                Value = ConstrainValue(parsed);
+                ValueChangedAction?.Invoke(Value);
+            }
+            Editing = false;
         }
         else if (e.Key == Key.Up)
         {
             e.Handled = true;
             Up_Click(sender, e);
+            EditText = Value.ToString("0.####"); // Keep edit text synced if using arrows while editing
         }
         else if (e.Key == Key.Down)
         {
             e.Handled = true;
             Down_Click(sender, e);
+            EditText = Value.ToString("0.####"); // Keep edit text synced if using arrows while editing
         }
         else if (e.Key == Key.Escape)
         {
             e.Handled = true;
             Value = _lastv;
+            EditText = Value.ToString("0.####");
             Editing = false;
             ValueChangedAction?.Invoke(Value);
         }
@@ -412,6 +428,7 @@ public partial class ValueSlider : UserControl
     private void StartEditing()
     {
         _lastv = Value;
+        EditText = Value.ToString("0.####");
         Editing = true;
         valueEditor.Focus();
         valueEditor.SelectAll();
@@ -428,7 +445,20 @@ public partial class ValueSlider : UserControl
         StartEditing();
     }
 
-    private void ValueEditor_LostFocus(object? sender, RoutedEventArgs e) => Editing = false;
+    private void ValueEditor_LostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (double.TryParse(EditText, out double parsed))
+        {
+            ValueWillChangeAction?.Invoke();
+            Value = ConstrainValue(parsed);
+            ValueChangedAction?.Invoke(Value);
+        }
+        else
+        {
+            EditText = Value.ToString("0.####"); // Revert if malformed text was left behind
+        }
+        Editing = false;
+    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

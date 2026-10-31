@@ -13,6 +13,7 @@
     <Configurations>Debug;ReleasePortable;ReleaseInstaller</Configurations>
     <Version>1.5.0</Version>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
   </PropertyGroup>
 
   <!-- Configurations -->

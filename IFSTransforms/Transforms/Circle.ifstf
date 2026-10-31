@@ -1,0 +1,38 @@
+@Name: Circle
+@Version: 1.0
+@Description: Circle with true pixel-scaled RimWidth.
+@Tags: shape
+
+@Radius: 1.0
+@RimWidth: 1.0
+
+// Convert pixel count to world-space units. 
+// Adjust this pixelScale factor if a RimWidth of 1 still looks too thick or thin for your viewport.
+float pixelScale = 0.002; 
+float scaledWidth = @RimWidth * pixelScale;
+
+// If RimWidth is fractional (< 1.0), discard points probabilistically for wisps
+if (scaledWidth < 1.0) {
+    if (random(next) > scaledWidth) {
+        return vec3(0.0/0.0); // Discard point (NaN)
+    }
+}
+
+
+// Independent offset scaled strictly to pixel size
+float edgeOffset = scaledWidth * (random(next) - 0.5);
+float r = @Radius + edgeOffset;
+
+float th = 2.0 * PI * random(next);
+return r * vec3(cos(th), sin(th), 0.0);
+
+/* --- BlurWidth functionality temporarily disabled ---
+float halfRim = @RimWidth * 0.5;
+if (@BlurWidth > 0.0) {
+    float u = max(random(next), 0.0001);
+    float logBlur = -log(u) * @BlurWidth;
+    float side = (random(next) < 0.5) ? 1.0 : -1.0;
+    offset = side * (halfRim + logBlur);
+}
+-------------------------------------------------- */
+

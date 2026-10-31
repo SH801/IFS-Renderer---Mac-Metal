@@ -235,8 +235,18 @@ public sealed class RendererGL : IAsyncDisposable
     private int _aliasBufferSize = 0;
     private int _paletteBufferSize = 0;
 
+    private readonly TextWriter _originalOut;
+    private readonly TimestampConsoleWriter _timestampWriter;
+
     public RendererGL(object? ctx = null)
     {
+        // 1. Save the existing global output stream
+        _originalOut = Console.Out;
+
+        // 2. Instantiate and apply our custom timestamp writer globally
+        _timestampWriter = new TimestampConsoleWriter(_originalOut);
+        Console.SetOut(_timestampWriter);
+
         Console.WriteLine("[RendererGL] Constructor: Initializing Metal device...");
         _device = MTLDevice.CreateSystemDefaultDevice();
         if (_device.NativePtr == IntPtr.Zero)
@@ -606,6 +616,13 @@ public sealed class RendererGL : IAsyncDisposable
         InvocationIters = Math.Clamp(adjustedInvocationIters, 50, 20000);
     }
 
+    public void ResetPreviewScreen() 
+    {
+        int byteCount = DisplayWidth * DisplayHeight * 4;
+        byte[] blackBgra = new byte[byteCount];
+        OnFrameReady?.Invoke(blackBgra, blackBgra.Length);
+    }
+
     public unsafe void DispatchCompute()
     {
         // Console.WriteLine("[RendererGL] DispatchCompute: Start");
@@ -618,6 +635,16 @@ public sealed class RendererGL : IAsyncDisposable
 
         if (!IsInitialized)
             throw new InvalidOperationException("Renderer is not initialized.");
+
+        var currentIterators = LoadedParams.Iterators.ToList();
+
+        if (!currentIterators.Any())
+        {
+            Console.WriteLine("[RendererGL] No iterators to process, nothing to render, setting IsRendering to false");
+            _ = StopRenderLoop();
+            ResetPreviewScreen();
+            return;
+        }
 
         var commandBuffer = _commandQueue.CommandBuffer();
 
@@ -663,19 +690,19 @@ public sealed class RendererGL : IAsyncDisposable
                 mark_area_in_focus = MarkAreaInFocus ? 1 : 0
             };
 
-            var cam = LoadedParams.Camera.GetCameraParameters(); // Or however you populate it
+            // var cam = LoadedParams.Camera.GetCameraParameters(); // Or however you populate it
 
-            Console.WriteLine("--- CameraStruct CPU Debug ---");
-            Console.WriteLine($"Position       : X={cam.position.X:F4}, Y={cam.position.Y:F4}, Z={cam.position.Z:F4}, W={cam.position.W:F4}");
-            Console.WriteLine($"Forward        : X={cam.forward.X:F4}, Y={cam.forward.Y:F4}, Z={cam.forward.Z:F4}, W={cam.forward.W:F4}");
-            Console.WriteLine($"Focus Point    : X={cam.focus_point.X:F4}, Y={cam.focus_point.Y:F4}, Z={cam.focus_point.Z:F4}, W={cam.focus_point.W:F4}");
-            Console.WriteLine($"Aperture       : {cam.aperture}");
-            Console.WriteLine($"Focus Distance : {cam.focus_distance}");
-            Console.WriteLine($"Depth of Field : {cam.depth_of_field}");
-            Console.WriteLine($"Projection Type: {cam.projection_type}");
+            // Console.WriteLine("--- CameraStruct CPU Debug ---");
+            // Console.WriteLine($"Position       : X={cam.position.X:F4}, Y={cam.position.Y:F4}, Z={cam.position.Z:F4}, W={cam.position.W:F4}");
+            // Console.WriteLine($"Forward        : X={cam.forward.X:F4}, Y={cam.forward.Y:F4}, Z={cam.forward.Z:F4}, W={cam.forward.W:F4}");
+            // Console.WriteLine($"Focus Point    : X={cam.focus_point.X:F4}, Y={cam.focus_point.Y:F4}, Z={cam.focus_point.Z:F4}, W={cam.focus_point.W:F4}");
+            // Console.WriteLine($"Aperture       : {cam.aperture}");
+            // Console.WriteLine($"Focus Distance : {cam.focus_distance}");
+            // Console.WriteLine($"Depth of Field : {cam.depth_of_field}");
+            // Console.WriteLine($"Projection Type: {cam.projection_type}");
 
-            // Optional: Quick peek at the view/projection matrix rows if needed
-            Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMatrix.M12}, {cam.viewProjMatrix.M13}, {cam.viewProjMatrix.M14}");
+            // // Optional: Quick peek at the view/projection matrix rows if needed
+            // Console.WriteLine($"ViewProj M11-M14: {cam.viewProjMatrix.M11}, {cam.viewProjMatrix.M12}, {cam.viewProjMatrix.M13}, {cam.viewProjMatrix.M14}");
 
             if (_settingsBuffer.Contents != IntPtr.Zero)
             {
@@ -690,7 +717,6 @@ public sealed class RendererGL : IAsyncDisposable
             var its = new List<IteratorStruct>();
             var allRealParams = new List<float>();
             var allVec3Params = new List<Vector4>();
-            var currentIterators = LoadedParams.Iterators.ToList();
 
             double sumStartWeights = currentIterators.Sum(i => i.StartWeight);
             if (sumStartWeights == 0.0)
@@ -719,7 +745,6 @@ public sealed class RendererGL : IAsyncDisposable
                 });
                 allRealParams.AddRange(it.RealParams.Values.Select(p => (float)p).ToList());                
                 allVec3Params.AddRange(it.Vec3Params.Values.Select(p => new Vector4(p, 1.0f)).ToList());
-                Console.WriteLine(string.Format("tfId of active transform: {0}", _registeredTransforms?.IndexOf(it.Transform)));
             }
 
             UpdateBufferData(ref _iteratorsBuffer, its.ToArray(), ref _iteratorsBufferSize, its.Count);
@@ -809,7 +834,7 @@ public sealed class RendererGL : IAsyncDisposable
         {
             IsRendering = true;
 
-            InvocationIters = 2000;
+            // InvocationIters = 20000;
 
             ThreadPool.QueueUserWorkItem((_) =>
             {
@@ -824,7 +849,7 @@ public sealed class RendererGL : IAsyncDisposable
 
                     var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
-                    // AdjustWorkloadSize(elapsedMs);
+                    AdjustWorkloadSize(elapsedMs);
 
                     bool target = BitOperations.Log2(1 + TotalIterations / (ulong)(HistogramWidth * HistogramHeight)) >= LoadedParams.TargetIterationLevel;
                     bool isTargetIterationReachedByCurrentDispatch = !IsTargetIterationReached && target;
@@ -1609,6 +1634,9 @@ if (iter.tfId == {0})
                 _postFxTextureB.Dispose();
         }
         IsInitialized = false;
+
+        Console.SetOut(_originalOut);
+        _timestampWriter.Dispose();        
     }
 }
 
