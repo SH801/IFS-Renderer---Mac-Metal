@@ -99,9 +99,7 @@
                        Text="{Binding $parent[local:ValueSlider].Value, StringFormat={}{0:0.####}}"
                        IsVisible="{Binding $parent[local:ValueSlider].Editing, Converter={StaticResource InverseBoolConverter}}"
                        Background="#303030" Cursor="SizeWestEast"
-                       IsTabStop="True" Focusable="True" GotFocus="valueSlider_GotKeyboardFocus"
-                       TextAlignment="Center" VerticalAlignment="Center" 
-                       PointerMoved="DisplayLabel_MouseMove" PointerReleased="DisplayLabel_MouseUp"/>
+                       TextAlignment="Center" VerticalAlignment="Center"/>
 
             <TextBox x:Name="valueEditor" Grid.Column="1" 
                     Text="{Binding $parent[local:ValueSlider].EditText, Mode=TwoWay}"
@@ -109,7 +107,7 @@
                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
                     DoubleTapped="ValueEditor_MouseDoubleClick"
                     KeyDown="ValueEditor_KeyDown" LostFocus="ValueEditor_LostFocus"/>
-                     
+
             <Button Grid.Column="2" 
                     Padding="10,0,10,0" IsTabStop="False"
                     Background="#303030"

@@ -382,6 +382,78 @@ public partial class ValueSlider : UserControl
 
     private Point _dragp;
     private double _lastv;
+private bool _isDragging = false;
+
+protected override void OnPointerPressed(PointerPressedEventArgs e)
+{
+    base.OnPointerPressed(e);
+    var point = e.GetCurrentPoint(this);
+    if (point.Properties.IsLeftButtonPressed && !Editing)
+    {
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            _dragp = e.GetPosition(window);
+            _lastv = Value;
+            _isDragging = false;
+            e.Pointer.Capture(this);
+            e.Handled = true;
+        }
+    }
+}
+
+protected override void OnPointerMoved(PointerEventArgs e)
+{
+    base.OnPointerMoved(e);
+    if (e.Pointer.Captured == this)
+    {
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            double currentX = e.GetPosition(window).X;
+            double delta = currentX - _dragp.X;
+
+            if (!_isDragging && Math.Abs(delta) > 2.0)
+            {
+                _isDragging = true;
+                ValueWillChangeAction?.Invoke();
+                ValueDraggingStartedAction?.Invoke();
+            }
+
+            if (_isDragging)
+            {
+                Value = ConstrainValue(_lastv + delta * Increment * IncrementMultiplier);
+                ValueChangedAction?.Invoke(Value);
+            }
+            e.Handled = true;
+        }
+    }
+}
+
+protected override void OnPointerReleased(PointerReleasedEventArgs e)
+{
+    base.OnPointerReleased(e);
+    if (e.InitialPressMouseButton == MouseButton.Left)
+    {
+        if (e.Pointer.Captured == this)
+        {
+            e.Pointer.Capture(null);
+            
+            if (_isDragging)
+            {
+                ValueDraggingCompletedAction?.Invoke(Value);
+                _isDragging = false;
+            }
+            else
+            {
+                // Dispatch start editing so pointer capture release finishes first
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    StartEditing();
+                }, DispatcherPriority.Input);
+            }
+            e.Handled = true;
+        }
+    }
+}
 
     private void DisplayLabel_MouseMove(object? sender, PointerEventArgs e)
     {
@@ -391,6 +463,7 @@ public partial class ValueSlider : UserControl
             {
                 if (e.Pointer.Captured != displayLabel)
                 {
+                    Editing = false;
                     ValueWillChangeAction?.Invoke();
                     ValueDraggingStartedAction?.Invoke();
                     _dragp = e.GetPosition(window);
@@ -400,6 +473,8 @@ public partial class ValueSlider : UserControl
 
                 double delta = e.GetPosition(window).X - _dragp.X;
                 Value = ConstrainValue(_lastv + delta * Increment * IncrementMultiplier);
+                Console.WriteLine(Value);
+
                 ValueChangedAction?.Invoke(Value);
             }
         }
