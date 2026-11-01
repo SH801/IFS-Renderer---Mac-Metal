@@ -4,7 +4,7 @@
 @Tags: shape
 
 @Radius: 1.0
- // Numbers of pixels (broadly)
+// Numbers of pixels (broadly)
 @RimWidth: 1.0
 
 // Proportion of RimWidth to extend blur to
@@ -16,12 +16,31 @@
 float pixelScale = 0.002; 
 float scaledWidth = @RimWidth * pixelScale;
 float halfRim = scaledWidth * 0.5;
-float blurScale = @BlurWidth * @RimWidth * pixelScale;
 
 float offset = 0.0;
 
-// Balance probability between the uniform rim and the blur tails
-float pRim = (blurScale > 0.0) ? (scaledWidth / (scaledWidth + blurScale)) : 1.0;
+// Correct probability balancing based on analytical integration weights of the 1/r^2 tail
+// float blurWeight = scaledWidth * max(@BlurWidth, 0.0001);
+// float pRim = scaledWidth / (scaledWidth + blurWeight);
+
+
+// 1. Rim Weight
+float r_in  = max(@Radius - halfRim, 0.0);
+float r_out = @Radius + halfRim;
+float blurScale = scaledWidth * max(@BlurWidth, 0.0001);
+
+float rimWeight = @Radius * scaledWidth;
+
+// 2. Inner Blur Weight
+float innerBlurWeight = blurScale * (r_in - blurScale * log(1.0 + r_in / blurScale));
+
+// 3. Outer Blur Weight (Truncated to reach L)
+float L = blurScale * 10.0; // Outer tail reach limit
+float outerBlurWeight = blurScale * (r_out * (L / (L + blurScale)) + blurScale * log(1.0 + L / blurScale));
+
+// 4. Density-matched pRim
+float pRim = rimWeight / (rimWeight + innerBlurWeight + outerBlurWeight);
+
 
 if (random(next) < pRim) {
     // Solid rim region (uniform distribution)
@@ -42,18 +61,12 @@ if (random(next) < pRim) {
     // Clamp u safely in [0, 1) to avoid division by zero at 1.0
     float u = clamp(random(next), 0.0, 0.999999);
     
-    // Exact analytical Inverse CDF for 3D Inverse-Square Law (1/r^2):
-    // - At u = 0.0: curveVal = 0.0 (starts seamlessly at the rim edge)
-    // - As u -> 1.0: stretches infinitely with true physical 1/r^2 decay and zero steps
-    float rimIntensity = 1.0 / scaledWidth;
-    float curveVal = (1.0 / sqrt(1.0 - u)) - 1.0;
-
-    curveVal *= rimIntensity;
-        
-    float blurOffset = blurScale * curveVal;
+    // Exact analytical Inverse CDF for 1/(scaledWidth + x)^2 decay tail,
+    // ensuring continuous density matching at the boundary (x = 0 -> blurOffset = 0)
+    float blurOffset = scaledWidth * (u / (1.0 - u)) * @BlurWidth;
     
     float side = (random(next) < 0.5) ? 1.0 : -1.0;
-    offset = side * halfRim + side * blurOffset;
+    offset = side * (halfRim + blurOffset);
 }
 
 float r = @Radius + offset;

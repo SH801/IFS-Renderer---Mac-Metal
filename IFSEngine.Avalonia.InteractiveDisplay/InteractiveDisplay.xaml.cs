@@ -355,10 +355,11 @@ private void OnPointerMoved(object? sender, PointerEventArgs e)
                 // Option: Create a bool InvertRotationAxisX = true; if you want it configurable, 
                 // or just apply a negative sign directly to delta.X
                 float horizontalMultiplier = -1.0f; // Flips left-right direction
+                float verticalMultiplier = -1.0f; // Flips up-down direction
 
                 if (props.IsLeftButtonPressed)
                 {
-                    rotateVec = new(delta.X * horizontalMultiplier, delta.Y, 0.0f);
+                    rotateVec = new(delta.X * horizontalMultiplier, delta.Y * verticalMultiplier, 0.0f);
                 }
                 else if (props.IsRightButtonPressed)
                 {
