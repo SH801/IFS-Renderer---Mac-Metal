@@ -8,6 +8,7 @@
         xmlns:local="clr-namespace:MacDisplay.Views"
         xmlns:animation="clr-namespace:MacDisplay.Views.Animation"
         xmlns:disp="clr-namespace:IFSEngine.Avalonia.InteractiveDisplay;assembly=IFSEngine.Avalonia.InteractiveDisplay"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}"
         Width="1920" Height="1080"
@@ -288,11 +289,15 @@
                         <local:ControlHintsPanel
                                                 IsVisible="{Binding IsHintsPanelVisible}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="16"/>
-                                                
-                        <ProgressBar IsIndeterminate="True"
-                                    IsVisible="{Binding Path=., Converter={x:Static converters:ObjectConverters.IsNull}}"
-                                    Width="50" Height="20"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <progRing:ProgressRing Width="40" 
+                            IsVisible="{Binding Path=., Converter={x:Static converters:ObjectConverters.IsNull}}"
+
+                            Height="40" 
+                            IsActive="True" 
+                            Foreground="Blue"
+                            Margin="0,0,0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>                                                
                     </Grid>
                 </Border>
 

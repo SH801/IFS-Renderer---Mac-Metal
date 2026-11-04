@@ -1,0 +1,81 @@
+@Name: Random Cubes
+@Version: 1.0
+@Description: Squares with uniform point density distributed within a sphere with individual time-based fade-up.
+@Tags: shape
+
+@TotalNumber: 10
+@Spread: 1.0
+@MinRadius: 0.5
+@MaxRadius: 2.0
+@RimWidth: 1.0
+@BlurWidth: 1.0 
+@Rotate: 0 0 0
+@Translate: 0 0 0
+@Time: 0.0
+
+// 1. Convert random(next) decimal [0, 1) to an integer index int_n where 1 <= int_n <= @TotalNumber
+int int_n = int(floor(random(next) * @TotalNumber)) + 1;
+
+// -------------------------------------------------------------------------
+// INDIVIDUAL CUBE FADE-UP MECHANISM
+// -------------------------------------------------------------------------
+// Give each cube instance a unique, deterministic spawn time offset based on int_n
+float seed_spawn = float(int_n) * 149.321;
+float spawn_time = fract(sin(seed_spawn) * 43758.5453123) * 4.0; // Staggered spawn window
+
+// Calculate how long this specific cube has been alive relative to the global @Time proxy
+float cube_age = @Time - spawn_time;
+
+// If @Time hasn't reached this cube's spawn time yet, don't render it
+if (cube_age < 0.0) {
+    return discarded_point;
+}
+
+// Smoothly fade up point density from black over a 1.0 second duration after birth
+float fade_duration = 1.0;
+float fade_factor = clamp(cube_age / fade_duration, 0.0, 1.0);
+
+if (random(next) > fade_factor) {
+    return discarded_point;
+}
+// -------------------------------------------------------------------------
+
+// 2. Use int_n to compute deterministic spherical coordinates for the square's center
+float u1 = fract(sin(float(int_n) * 12.9898) * 43758.5453123);
+float u2 = fract(sin(float(int_n) * 78.233) * 43758.5453123);
+float u3 = fract(sin(float(int_n) * 141.592) * 43758.5453123);
+
+float phi = u1 * 6.28318530718;          // Azimuth angle [0, 2*PI]
+float cosTheta = 2.0 * u2 - 1.0;         // Polar spread
+
+// Remove statistical aggregation around poles
+if (abs(cosTheta) == 1.0) return discarded_point;
+
+float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+float r = @Spread * pow(u3, 1.0 / 3.0);  // Uniform volumetric radius scaling bounded by @Spread
+
+float cx = r * sinTheta * cos(phi);
+float cy = r * sinTheta * sin(phi);
+float cz = r * cosTheta;
+
+// 3. Use int_n with a unique multiplier to compute a decorrelated deterministic size
+float seed_size = float(int_n) * 39.727;
+float size_rand = fract(sin(seed_size) * 43758.5453123);
+float scale = @MinRadius + size_rand * (@MaxRadius - @MinRadius);
+
+// 4. Calculate density for this specific sized geometry
+float density = scale * scale;
+float scaleddensity = density / (@MaxRadius * @MaxRadius);
+
+// Reject points based on scaleddensity
+if (scaleddensity <= random(next))
+{
+   return discarded_point;
+}
+
+// 5. Draw the square using local random offsets scaled by `scale`
+float local_x = (random(next) - 0.5) * scale;
+float local_y = (random(next) - 0.5) * scale;
+float local_z = (random(next) - 0.5) * scale;
+
+return @Translate + vec3(cx + local_x, cy + local_y, cz + local_z);

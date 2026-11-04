@@ -8,6 +8,7 @@
              xmlns:viewModels="clr-namespace:MacDisplay.ViewModels"
              xmlns:conv="using:MacDisplay.Converters"
              xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
              mc:Ignorable="d" x:Class="MacDisplay.Views.Animation.AnimationPanel"
              x:Name="animationPanel"
              x:DataType="viewModels:AnimationViewModel"
@@ -228,7 +229,13 @@
                 🛈 Insert a keyframe by clicking ◇ next to the value!
             </Label>
             <StackPanel IsVisible="{Binding IsExportingFrames}">
-                <ProgressBar IsIndeterminate="True" Foreground="Red" Width="50" Height="20"/>
+                <progRing:ProgressRing Width="40" 
+                    Height="40" 
+                    IsActive="True" 
+                    Foreground="Red"
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
                 <TextBlock TextAlignment="Center" Foreground="#aaaaaa" FontSize="16" Margin="0,0,0,16">
                     Exporting animation frames...
                 </TextBlock>

@@ -1,0 +1,164 @@
+@Name: Random Circles v1
+@Version: 1.0
+@Description: Circles with inverse-square blur profiles and random per-instance XYZ rotation distributed within a sphere.
+@Tags: shape
+
+@TotalNumber: 10
+@Spread: 1.0
+@MinRadius: 0.5
+@MaxRadius: 2.0
+@RimWidth: 1.0
+@BlurWidth: 1.0 
+@Rotate: 0 0 0
+@Translate: 0 0 0
+
+// Define PI constant
+#ifndef PI
+#define PI 3.14159265359
+#endif
+
+// 1. Convert random(next) decimal [0, 1) to an integer index int_n where 1 <= int_n <= @TotalNumber
+int int_n = int(floor(random(next) * @TotalNumber)) + 1;
+
+// 2. Use int_n to compute deterministic spherical coordinates for the circle's center
+float u1 = fract(sin(float(int_n) * 12.9898) * 43758.5453123);
+float u2 = fract(sin(float(int_n) * 78.233) * 43758.5453123);
+float u3 = fract(sin(float(int_n) * 141.592) * 43758.5453123);
+
+float phi = u1 * 6.28318530718;          // Azimuth angle [0, 2*PI]
+float cosTheta = 2.0 * u2 - 1.0;         // Polar spread
+
+// Remove statistical aggregation around poles
+if (abs(cosTheta) == 1.0) return discarded_point;
+
+float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+float r_sphere = @Spread * pow(u3, 1.0 / 3.0);  // Uniform volumetric radius scaling bounded by @Spread
+
+// If radius is too small (bunching at center), push it out safely
+if (r_sphere < @Spread * 0.15) {
+    float re_roll = random(next);
+    r_sphere = @Spread * (0.15 + re_roll * 0.85);
+}
+
+float cx = r_sphere * sinTheta * cos(phi);
+float cy = r_sphere * sinTheta * sin(phi);
+float cz = r_sphere * cosTheta;
+
+// 3. Use int_n with a unique multiplier to compute a decorrelated deterministic size (Radius)
+float seed_size = float(int_n) * 39.727;
+float size_rand = fract(sin(seed_size) * 43758.5453123);
+float currentRadius = @MinRadius + size_rand * (@MaxRadius - @MinRadius);
+
+// 4. Calculate density for this specific sized geometry
+float density = currentRadius * currentRadius;
+float scaleddensity = density / (@MaxRadius * @MaxRadius);
+
+// Reject points based on scaleddensity
+if (scaleddensity <= random(next))
+{
+    return discarded_point;
+}
+
+// 5. Circle profile setup based on currentRadius
+float pixelScale = 0.002; 
+float scaledWidth = @RimWidth * pixelScale;
+float halfRim = scaledWidth * 0.5;
+
+float r_in  = max(currentRadius - halfRim, 0.0);
+float r_out = currentRadius + halfRim;
+float blurScale = @BlurWidth * pixelScale;
+
+// Rigorous 2D polar area weights for all three regions
+float w_inner = (blurScale > 0.0 && r_in > 0.0) ? 2.0 * PI * blurScale * (r_in - blurScale * log(1.0 + r_in / blurScale)) : 0.0;
+float w_rim   = PI * (r_out * r_out - r_in * r_in);
+float w_outer = (blurScale > 0.0) ? 2.0 * PI * blurScale * r_out : 0.0; 
+
+float w_total = w_inner + w_rim + w_outer;
+if (w_total <= 0.0) return discarded_point;
+
+// Cumulative Distribution Function (CDF) boundaries
+float cdf_inner = w_inner / w_total;
+float cdf_rim   = (w_inner + w_rim) / w_total;
+
+// Global sub-pixel opacity check
+if (@RimWidth < 1.0 && random(next) > @RimWidth) {
+    return discarded_point;
+}
+
+// Single unified random draw mapped through the piecewise Inverse CDF
+float u = clamp(random(next), 0.0, 0.999999);
+float r_local = 0.0;
+
+if (u < cdf_inner) {
+    if (blurScale == 0.0 || r_in <= 0.0) {
+        return discarded_point;
+    }
+    float u_seg = u / cdf_inner;
+    float x = blurScale * u_seg * r_in / (blurScale + (1.0 - u_seg) * r_in);
+    r_local = max(r_in - x, 0.0);
+} 
+else if (u < cdf_rim) {
+    float u_seg = (u - cdf_inner) / max(cdf_rim - cdf_inner, 0.00001);
+    r_local = sqrt(mix(r_in * r_in, r_out * r_out, u_seg));
+} 
+else {
+    if (blurScale == 0.0) {
+        return discarded_point;
+    }
+    float u_seg = (u - cdf_rim) / max(1.0 - cdf_rim, 0.00001);
+    float blurOffset = blurScale * (u_seg / max(1.0 - u_seg, 0.00001));
+    r_local = r_out + blurOffset;
+}
+
+// Logarithmic center attenuation for inward-bound points near the core
+float offset = r_local - currentRadius;
+if (offset < 0.0) {
+    float distNorm = clamp(r_local / currentRadius, 0.0, 1.0);
+    float logIntensity = log(1.0 + 9.0 * distNorm) / log(10.0);
+    if (random(next) > logIntensity) {
+        return discarded_point;
+    }
+}
+
+float th = 2.0 * PI * random(next);
+vec3 pos = r_local * vec3(cos(th), sin(th), 0.0);
+
+// 6. Compute decorrelated random rotation angles (0 to 360 degrees) per int_n instance
+float seed_rx = float(int_n) * 53.315;
+float seed_ry = float(int_n) * 107.123;
+float seed_rz = float(int_n) * 211.847;
+
+float rand_rx = fract(sin(seed_rx) * 43758.5453123) * 360.0;
+float rand_ry = fract(sin(seed_ry) * 43758.5453123) * 360.0;
+float rand_rz = fract(sin(seed_rz) * 43758.5453123) * 360.0;
+
+// Combine global uniform rotation (@Rotate) with instance-specific random rotation
+vec3 combinedRot = @Rotate + vec3(rand_rx, rand_ry, rand_rz);
+vec3 rad = combinedRot * (PI / 180.0);
+
+float cx_rot = cos(rad.x), sx_rot = sin(rad.x);
+float cy_rot = cos(rad.y), sy_rot = sin(rad.y);
+float cz_rot = cos(rad.z), sz_rot = sin(rad.z);
+
+mat3 rotX = mat3(
+    1.0,    0.0,    0.0,
+    0.0, cx_rot, sx_rot,
+    0.0,-sx_rot, cx_rot
+);
+
+mat3 rotY = mat3(
+    cy_rot, 0.0,-sy_rot,
+       0.0, 1.0,    0.0,
+    sy_rot, 0.0, cy_rot
+);
+
+mat3 rotZ = mat3(
+    cz_rot, sz_rot, 0.0,
+   -sz_rot, cz_rot, 0.0,
+       0.0,    0.0, 1.0
+);
+
+mat3 rot = rotZ * rotY * rotX;
+
+// Final composition: Local circle geometry transformed to its deterministic spherical center + global translation
+return @Translate + vec3(cx, cy, cz) + (rot * pos);

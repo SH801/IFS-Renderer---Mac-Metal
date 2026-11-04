@@ -1,0 +1,112 @@
+@Name: Circle_old
+@Version: 1.0
+@Description: Circle with physically accurate 3D inverse-square infinite blur tail, 3D rotation, and translation.
+@Tags: shape
+
+@Radius: 1.0
+// Numbers of pixels (broadly)
+@RimWidth: 1.0
+
+// Proportion of RimWidth to extend blur to
+@BlurWidth: 1.0 
+@Rotate: 0 0 0
+@Translate: 0 0 0
+
+// Convert pixel count to world-space units. 
+float pixelScale = 0.002; 
+float scaledWidth = @RimWidth * pixelScale;
+float halfRim = scaledWidth * 0.5;
+
+float offset = 0.0;
+
+// Correct probability balancing based on analytical integration weights of the 1/r^2 tail
+// float blurWeight = scaledWidth * max(@BlurWidth, 0.0001);
+// float pRim = scaledWidth / (scaledWidth + blurWeight);
+
+
+// 1. Rim Weight
+float r_in  = max(@Radius - halfRim, 0.0);
+float r_out = @Radius + halfRim;
+float blurScale = scaledWidth * max(@BlurWidth, 0.0001);
+
+float rimWeight = @Radius * scaledWidth;
+
+// 2. Inner Blur Weight
+float innerBlurWeight = blurScale * (r_in - blurScale * log(1.0 + r_in / blurScale));
+
+// 3. Outer Blur Weight (Truncated to reach L)
+float L = blurScale * 10.0; // Outer tail reach limit
+float outerBlurWeight = blurScale * (r_out * (L / (L + blurScale)) + blurScale * log(1.0 + L / blurScale));
+
+// 4. Density-matched pRim
+float pRim = rimWeight / (rimWeight + innerBlurWeight + outerBlurWeight);
+
+
+if (random(next) < pRim) {
+    // Solid rim region (uniform distribution)
+    if (scaledWidth < 1.0 && random(next) > scaledWidth) {
+        return vec3(0.0/0.0); // Discard point (NaN)
+    }
+    offset = scaledWidth * (random(next) - 0.5);
+} else {
+    if (@BlurWidth == 0.0) {
+        return vec3(0.0/0.0); // Discard point (NaN)
+    }
+
+    // Proportional intensity reduction if rim width is sub-pixel (< 1.0)
+    if (@RimWidth < 1.0 && random(next) > @RimWidth) {
+        return vec3(0.0/0.0); // Discard point (NaN)
+    }
+
+    // Clamp u safely in [0, 1) to avoid division by zero at 1.0
+    float u = clamp(random(next), 0.0, 0.999999);
+    
+    // Exact analytical Inverse CDF for 1/(scaledWidth + x)^2 decay tail,
+    // ensuring continuous density matching at the boundary (x = 0 -> blurOffset = 0)
+    float blurOffset = scaledWidth * (u / (1.0 - u)) * @BlurWidth;
+    
+    float side = (random(next) < 0.5) ? 1.0 : -1.0;
+    offset = side * (halfRim + blurOffset);
+}
+
+float r = @Radius + offset;
+
+// Logarithmic center attenuation for inward-bound points
+if (offset < 0.0) {
+    float distNorm = clamp(r / @Radius, 0.0, 1.0);
+    float logIntensity = log(1.0 + 9.0 * distNorm) / log(10.0);
+    if (random(next) > logIntensity) {
+        return vec3(0.0/0.0); // Discard point
+    }
+}
+
+float th = 2.0 * PI * random(next);
+vec3 pos = r * vec3(cos(th), sin(th), 0.0);
+
+// Convert rotation angles from degrees to radians
+vec3 rad = @Rotate * (PI / 180.0);
+float cx = cos(rad.x), sx = sin(rad.x);
+float cy = cos(rad.y), sy = sin(rad.y);
+float cz = cos(rad.z), sz = sin(rad.z);
+
+// Apply X, Y, and Z rotations (Z * Y * X order)
+mat3 rotX = mat3(
+    1.0,  0.0,  0.0,
+    0.0,   cx,   sx,
+    0.0,  -sx,   cx
+);
+
+mat3 rotY = mat3(
+     cy,  0.0,  -sy,
+    0.0,  1.0,  0.0,
+     sy,  0.0,   cy
+);
+
+mat3 rotZ = mat3(
+     cz,   sz,  0.0,
+    -sz,   cz,  0.0,
+    0.0,  0.0,  1.0
+);
+
+mat3 rot = rotZ * rotY * rotX;
+return rot * pos + @Translate;

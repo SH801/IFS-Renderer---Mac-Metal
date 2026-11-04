@@ -48,6 +48,7 @@
 
     <!-- MVVM Toolkit -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.11.0" />
 
     <!-- Configuration & Settings Support -->
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
@@ -149,9 +150,7 @@
     
     <MakeDir Directories="$(TargetBundleDir)" Condition="!Exists('$(TargetBundleDir)')" />
     
-    <Copy SourceFiles="Library/ResolutionPresets.json" 
-          DestinationFolder="$(TargetBundleDir)" 
-          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="Library/ResolutionPresets.json" DestinationFolder="$(TargetBundleDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyIFSTransforms" AfterTargets="Build">
@@ -170,9 +169,7 @@
       </ItemGroup>
 
       <!-- Copy files while preserving directory structure -->
-      <Copy SourceFiles="@(TransformFiles)"
-            DestinationFiles="@(TransformFiles->'$(TransformsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
-            SkipUnchangedFiles="true" />
+      <Copy SourceFiles="@(TransformFiles)" DestinationFiles="@(TransformFiles->'$(TransformsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyPostEffects" AfterTargets="Build">
@@ -187,9 +184,7 @@
           <PostEffectFiles Include="$(PostEffectsSourceDir)/**/*" />
       </ItemGroup>
 
-      <Copy SourceFiles="@(PostEffectFiles)"
-            DestinationFiles="@(PostEffectFiles->'$(PostEffectsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
-            SkipUnchangedFiles="true" />
+      <Copy SourceFiles="@(PostEffectFiles)" DestinationFiles="@(PostEffectFiles->'$(PostEffectsDestDir)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CopyTemplates" AfterTargets="Build">
@@ -204,9 +199,7 @@
           <TemplatesFiles Include="$(TemplatesSourceDir)/**/*" />
       </ItemGroup>
 
-      <Copy SourceFiles="@(TemplatesFiles)"
-            DestinationFiles="@(TemplatesFiles->'$(TemplatesDestDir)/%(RecursiveDir)%(Filename)%(Extension)')"
-            SkipUnchangedFiles="true" />
+      <Copy SourceFiles="@(TemplatesFiles)" DestinationFiles="@(TemplatesFiles->'$(TemplatesDestDir)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="SignAppBundle" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
@@ -241,9 +234,7 @@
       <AppFiles Include="$(AppSourceDir)**\*.*" />
     </ItemGroup>
     
-    <Copy SourceFiles="@(AppFiles)"
-          DestinationFiles="@(AppFiles->'$(AppDestDir)$(AssemblyName).app\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(AppFiles)" DestinationFiles="@(AppFiles->'$(AppDestDir)$(AssemblyName).app\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
